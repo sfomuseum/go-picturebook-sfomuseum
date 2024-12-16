@@ -1,0 +1,2 @@
+CWD=$(shell pwd)
+
