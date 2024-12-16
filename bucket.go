@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/aaronland/go-picturebook/bucket"
+	"github.com/jtacoma/uritemplates"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 	"github.com/sfomuseum/go-sfomuseum-api/response"
 	"github.com/tidwall/gjson"
@@ -113,8 +114,83 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 					im_rsp := gjson.GetBytes(im_body, "images")
 
-					for _, r := range im_rsp.Array() {
-						yield(r.Get("wof:id").String(), nil)
+					for im_idx, r := range im_rsp.Array() {
+
+						logger := slog.Default()
+						logger = logger.With("object", i.ItemId)
+						logger = logger.With("image", im_idx)
+
+						template_r := r.Get("media:uri_template")
+
+						if !template_r.Exists() {
+							logger.Warn("Image record for object is missing media:uri_template, skipping")
+							continue
+						}
+
+						sizes_r := r.Get("media:properties.sizes")
+
+						if !sizes_r.Exists() {
+							logger.Warn("Image record for object is missing media:properties.sizes, skipping")
+							continue
+						}
+
+						uri_t, err := uritemplates.Parse(template_r.String())
+
+						if err != nil {
+							logger.Warn("Failed to parse URI template for object image", "error", err)
+							continue
+						}
+
+						vars := make(map[string]interface{})
+
+						labels := []string{
+							"o",
+							"k",
+							"b",
+							"c",
+						}
+
+						for _, label := range labels {
+
+							l_rsp := sizes_r.Get(label)
+
+							if !l_rsp.Exists() {
+								continue
+							}
+
+							vars["label"] = label
+							vars["secret"] = l_rsp.Get("secret").String()
+							vars["extension"] = l_rsp.Get("extension").String()
+							break
+						}
+
+						_, has_label := vars["label"]
+
+						if !has_label {
+							logger.Warn("Image missing label after reading sizes, skipping")
+							continue
+						}
+
+						im_uri, err := uri_t.Expand(vars)
+
+						if err != nil {
+							logger.Warn("Failed to expand URI template vars, skipping", "error", err)
+							continue
+						}
+
+						yield(im_uri, nil)
+
+						/*
+							id_r := r.Get("wof:id")
+
+							if (! id_r.Exists()){
+								slog.Warn("Image record for object is missing wof:id", "object", i.ItemId)
+								continue
+							}
+
+							compound_id := fmt.Sprintf("%d:%d", i.TypeId, id_r.Int())
+							yield(compound_id, nil)
+						*/
 					}
 
 					return nil
@@ -140,6 +216,8 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 }
 
 func (b *ShoeboxBucket) NewReader(ctx context.Context, key string, opts any) (io.ReadSeekCloser, error) {
+
+	// This needs a sfomuseum.collection.images.getInfo method...
 	return nil, fmt.Errorf("Not implemented")
 }
 
@@ -148,7 +226,7 @@ func (b *ShoeboxBucket) NewWriter(ctx context.Context, key string, opts any) (io
 }
 
 func (b *ShoeboxBucket) Delete(ctx context.Context, key string) error {
-	return nil
+	return fmt.Errorf("Not implemented")
 }
 
 func (b *ShoeboxBucket) Attributes(ctx context.Context, key string) (*bucket.Attributes, error) {
