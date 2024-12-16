@@ -6,17 +6,29 @@ import (
 	"fmt"
 	"io"
 	"iter"
-	_ "log/slog"
+	"log/slog"
 	"net/url"
+	"strconv"
 
 	"github.com/aaronland/go-picturebook/bucket"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 	"github.com/sfomuseum/go-sfomuseum-api/response"
+	"github.com/tidwall/gjson"
 )
 
 type ShoeboxBucket struct {
 	bucket.Bucket
 	api_client client.Client
+}
+
+func init() {
+
+	ctx := context.Background()
+	err := bucket.RegisterBucket(ctx, "shoebox", NewShoeboxBucket)
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func NewShoeboxBucket(ctx context.Context, uri string) (bucket.Bucket, error) {
@@ -48,6 +60,7 @@ func NewShoeboxBucket(ctx context.Context, uri string) (bucket.Bucket, error) {
 func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter.Seq2[string, error] {
 
 	// https://api.sfomuseum.org/methods/sfomuseum.you.shoebox.listItems
+	// https://api.sfomuseum.org/methods/sfomuseum.collection.objects.getImages
 
 	return func(yield func(string, error) bool) {
 
@@ -70,8 +83,48 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 			}
 
 			for _, i := range items_rsp.Items {
-				str_id := fmt.Sprintf("%d:%d", i.TypeId, i.ItemId)
-				yield(str_id, nil)
+
+				// Object (fetch type map rather than hardcoding things...)
+
+				if i.TypeId != 1 {
+					slog.Warn("Item type not supported", "item id", i.ItemId, "type", i.TypeId)
+					continue
+				}
+
+				str_id := strconv.FormatInt(i.ItemId, 10)
+
+				im_args := &url.Values{}
+				im_args.Set("method", "sfomuseum.collection.objects.getImages")
+				im_args.Set("object_id", str_id)
+
+				im_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
+
+					if err != nil {
+						return err
+					}
+
+					// Something something SPR...
+
+					im_body, err := io.ReadAll(r)
+
+					if err != nil {
+						return err
+					}
+
+					im_rsp := gjson.GetBytes(im_body, "images")
+
+					for _, r := range im_rsp.Array() {
+						yield(r.Get("wof:id").String(), nil)
+					}
+
+					return nil
+				}
+
+				im_err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, im_args, im_cb)
+
+				if im_err != nil {
+					return fmt.Errorf("Failed to retrieve images for object %d, %w", i.ItemId, im_err)
+				}
 			}
 
 			return nil
