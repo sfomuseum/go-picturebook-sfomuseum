@@ -2,3 +2,4 @@
 bin
 work
 go.work*
+*.pdf

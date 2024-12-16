@@ -7,6 +7,7 @@ import (
 	"io"
 	"iter"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"strconv"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 	"github.com/sfomuseum/go-sfomuseum-api/response"
 	"github.com/tidwall/gjson"
+	"github.com/whosonfirst/go-ioutil"
 )
 
 type ShoeboxBucket struct {
@@ -217,8 +219,19 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 func (b *ShoeboxBucket) NewReader(ctx context.Context, key string, opts any) (io.ReadSeekCloser, error) {
 
-	// This needs a sfomuseum.collection.images.getInfo method...
-	return nil, fmt.Errorf("Not implemented")
+	// Valid key here...
+
+	rsp, err := http.Get(key)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to retrieve %s, %w", key, err)
+	}
+
+	if rsp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Failed to retrieve %s, %d %s", key, rsp.StatusCode, rsp.Status)
+	}
+
+	return ioutil.NewReadSeekCloser(rsp.Body)
 }
 
 func (b *ShoeboxBucket) NewWriter(ctx context.Context, key string, opts any) (io.WriteCloser, error) {
