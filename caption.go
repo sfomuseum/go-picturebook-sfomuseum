@@ -2,19 +2,24 @@ package shoebox
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/url"
+	"path/filepath"
 	"strings"
 
 	"github.com/aaronland/go-picturebook/bucket"
 	"github.com/aaronland/go-picturebook/caption"
 	"github.com/dgraph-io/ristretto/v2"
-	"github.com/sfomuseum/go-picturebook-shoebox/oembed"
+	"github.com/sfomuseum/go-sfomuseum-api/client"
+	"github.com/sfomuseum/go-sfomuseum-api/response"
 )
 
 type ShoeboxCaption struct {
 	caption.Caption
-	cache *ristretto.Cache[string, string]
+	api_client client.Client
+	cache      *ristretto.Cache[string, string]
 }
 
 func init() {
@@ -29,6 +34,23 @@ func init() {
 
 func NewShoeboxCaption(ctx context.Context, uri string) (caption.Caption, error) {
 
+	u, err := url.Parse(uri)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse URI, %w", err)
+	}
+
+	q := u.Query()
+	token := q.Get("token")
+
+	client_uri := fmt.Sprintf("oauth2://?access_token=%s", token)
+
+	api_client, err := client.NewClient(ctx, client_uri)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create new client, %w", err)
+	}
+
 	cache, err := ristretto.NewCache(&ristretto.Config[string, string]{
 		NumCounters: 1e7,     // number of keys to track frequency of (10M).
 		MaxCost:     1 << 30, // maximum cost of cache (1GB).
@@ -40,7 +62,8 @@ func NewShoeboxCaption(ctx context.Context, uri string) (caption.Caption, error)
 	}
 
 	c := &ShoeboxCaption{
-		cache: cache,
+		cache:      cache,
+		api_client: api_client,
 	}
 
 	return c, nil
@@ -48,29 +71,47 @@ func NewShoeboxCaption(ctx context.Context, uri string) (caption.Caption, error)
 
 func (c *ShoeboxCaption) Text(ctx context.Context, b bucket.Bucket, key string) (string, error) {
 
-	caption, found := c.cache.Get(key)
+	// https://api.sfomuseum.org/methods/sfomuseum.collection.images.getCaption
+
+	logger := slog.Default()
+	logger = logger.With("key", key)
+
+	str_caption, found := c.cache.Get(key)
 
 	if found {
-		return caption, nil
+		return str_caption, nil
 	}
 
-	oembed_uri := fmt.Sprintf("https://collection.sfomuseum.org/oembed?url=%s", key)
-	slog.Info(oembed_uri)
+	base := filepath.Base(key)
 
-	o, err := oembed.Fetch(oembed_uri)
+	// Please use a regexp...
+	parts := strings.Split(base, "_")
+	image_id := parts[0]
+
+	logger = logger.With("image", image_id)
+
+	args := &url.Values{}
+	args.Set("method", "sfomuseum.collection.images.getCaption")
+	args.Set("image_id", image_id)
+
+	r, err := c.api_client.ExecuteMethod(ctx, args)
 
 	if err != nil {
+		logger.Error("Failed to get caption", "error", err)
 		return "", err
 	}
 
-	lines := []string{
-		o.Title,
-		o.SFOMuseumDate,
-		o.SFOMuseumCreditline,
-		o.SFOMuseumAccessionNumber,
+	var caption_rsp *response.ImageCaptionResponse
+
+	dec := json.NewDecoder(r)
+	err = dec.Decode(&caption_rsp)
+
+	if err != nil {
+		logger.Error("Failed to decode caption", "error", err)
+		return "", err
 	}
 
-	str_caption := strings.Join(lines, "\n")
+	str_caption = caption_rsp.Caption.String()
 	c.cache.Set(key, str_caption, 1)
 
 	return str_caption, nil
