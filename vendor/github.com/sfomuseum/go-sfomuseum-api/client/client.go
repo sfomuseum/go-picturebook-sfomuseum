@@ -17,7 +17,7 @@ const API_ENDPOINT string = "https://api.sfomuseum.org/rest"
 // type Client is an interface for SFO Museum API client implementations.
 type Client interface {
 	// ExecuteMethod performs an API method request.
-	ExecuteMethod(context.Context, *url.Values) (io.ReadSeekCloser, error)
+	ExecuteMethod(context.Context, string, *url.Values) (io.ReadSeekCloser, error)
 }
 
 // ExecuteMethodPaginatedCallback is a custom callback function to be invoked by every response item
@@ -26,7 +26,7 @@ type ExecuteMethodPaginatedCallback func(context.Context, io.ReadSeekCloser, err
 
 // ExecuteMethodPaginatedWithClient performs as many paginated API requests for a given method to yield
 // all the result. Each result is passed to the 'cb' callback method for final processing.
-func ExecuteMethodPaginatedWithClient(ctx context.Context, cl Client, args *url.Values, cb ExecuteMethodPaginatedCallback) error {
+func ExecuteMethodPaginatedWithClient(ctx context.Context, cl Client, verb string, args *url.Values, cb ExecuteMethodPaginatedCallback) error {
 
 	page := 1
 	pages := -1
@@ -53,7 +53,7 @@ func ExecuteMethodPaginatedWithClient(ctx context.Context, cl Client, args *url.
 			// pass
 		}
 
-		fh, err := cl.ExecuteMethod(ctx, args)
+		fh, err := cl.ExecuteMethod(ctx, verb, args)
 
 		err = cb(ctx, fh, err)
 

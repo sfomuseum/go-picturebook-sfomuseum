@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -94,7 +95,7 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b bucket.Bucket, key string) 
 	args.Set("method", "sfomuseum.collection.images.getCaption")
 	args.Set("image_id", image_id)
 
-	r, err := c.api_client.ExecuteMethod(ctx, args)
+	r, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, args)
 
 	if err != nil {
 		logger.Error("Failed to get caption", "error", err)

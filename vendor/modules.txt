@@ -160,7 +160,7 @@ github.com/sfomuseum/go-flags/multi
 ## explicit; go 1.18
 github.com/sfomuseum/go-font-ocra
 github.com/sfomuseum/go-font-ocra/fonts
-# github.com/sfomuseum/go-sfomuseum-api v0.0.0-20241217000438-9bbd30f5ddc2
+# github.com/sfomuseum/go-sfomuseum-api v0.0.1
 ## explicit; go 1.22.1
 github.com/sfomuseum/go-sfomuseum-api/client
 github.com/sfomuseum/go-sfomuseum-api/response

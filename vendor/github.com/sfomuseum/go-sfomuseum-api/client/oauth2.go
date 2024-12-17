@@ -5,10 +5,10 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	_ "log"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/whosonfirst/go-ioutil"
 )
@@ -99,7 +99,7 @@ func NewOAuth2Client(ctx context.Context, uri string) (Client, error) {
 }
 
 // ExecuteMethod will perform an API request derived from 'args'.
-func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, args *url.Values) (io.ReadSeekCloser, error) {
+func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, verb string, args *url.Values) (io.ReadSeekCloser, error) {
 
 	endpoint, err := url.Parse(cl.api_endpoint)
 
@@ -107,18 +107,41 @@ func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, args *url.Values) (io
 		return nil, fmt.Errorf("Failed to parse endpoint URI, %w", err)
 	}
 
-	http_method := "GET"
-
 	if cl.access_token != "" {
 		args.Set("access_token", cl.access_token)
 	}
 
-	endpoint.RawQuery = args.Encode()
+	var req *http.Request
 
-	req, err := http.NewRequest(http_method, endpoint.String(), nil)
+	switch verb {
+	case http.MethodGet:
 
-	if err != nil {
-		return nil, err
+		endpoint.RawQuery = args.Encode()
+
+		r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+
+		if err != nil {
+			return nil, err
+		}
+
+		req = r
+
+	case http.MethodPost:
+
+		args_r := strings.NewReader(args.Encode())
+
+		r, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), args_r)
+
+		if err != nil {
+			return nil, err
+		}
+
+		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+		req = r
+
+	default:
+		return nil, fmt.Errorf("Invalid or unsupported verb")
 	}
 
 	return cl.executeRequest(ctx, req)

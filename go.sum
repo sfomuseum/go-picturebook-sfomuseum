@@ -197,8 +197,8 @@ github.com/sfomuseum/go-flags v0.10.0 h1:1OC1ACxpWMsl3XQ9OeNVMQj7Zi2CzufP3Rym3mP
 github.com/sfomuseum/go-flags v0.10.0/go.mod h1:VXOnnX1/yxQpX2yiwHaBV6aCmhtszQOL5bL1/nNo3co=
 github.com/sfomuseum/go-font-ocra v0.0.3 h1:spf3fKuJ7JJFc0ucq1GusOfx8PghsGy4Lzm1P4F96JE=
 github.com/sfomuseum/go-font-ocra v0.0.3/go.mod h1:XS9LDEk78Yyls1DYsMfZSbzCW+WSPKEWDCNd4UgJlUY=
-github.com/sfomuseum/go-sfomuseum-api v0.0.0-20241217000438-9bbd30f5ddc2 h1:SW73kcBasuveQJCZNTlnI2i62KUezGCTnF3lwtO+z3Q=
-github.com/sfomuseum/go-sfomuseum-api v0.0.0-20241217000438-9bbd30f5ddc2/go.mod h1:EC0qLHy1od81vgrcwAgImf8XS+hA88C7A7djebry2Bs=
+github.com/sfomuseum/go-sfomuseum-api v0.0.1 h1:NvLnsOiabMNqAfkx8xS7yo5SQ/OZHURMLxr5fBC1A4c=
+github.com/sfomuseum/go-sfomuseum-api v0.0.1/go.mod h1:EC0qLHy1od81vgrcwAgImf8XS+hA88C7A7djebry2Bs=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=

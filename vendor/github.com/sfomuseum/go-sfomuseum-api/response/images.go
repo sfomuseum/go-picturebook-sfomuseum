@@ -23,6 +23,7 @@ func (r *ImageCaption) String() string {
 		r.Title,
 		r.Date,
 		r.CreditLine,
+		"Collection of SFO Museum",
 		r.AccessionNumber,
 	}
 

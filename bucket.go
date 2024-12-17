@@ -198,7 +198,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					return nil
 				}
 
-				im_err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, im_args, im_cb)
+				im_err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args, im_cb)
 
 				if im_err != nil {
 					return fmt.Errorf("Failed to retrieve images for object %d, %w", i.ItemId, im_err)
@@ -208,7 +208,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 			return nil
 		}
 
-		err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, args, cb)
+		err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, args, cb)
 
 		if err != nil {
 			yield("", err)
