@@ -8,13 +8,13 @@ import (
 	_ "github.com/sfomuseum/go-picturebook-shoebox"
 	_ "gocloud.dev/blob/fileblob"
 
-	"github.com/aaronland/go-picturebook/app/commandline"
+	"github.com/aaronland/go-picturebook/app/picturebook"
 )
 
 func main() {
 
 	ctx := context.Background()
-	err := commandline.Run(ctx)
+	err := picturebook.Run(ctx)
 
 	if err != nil {
 		log.Fatalf("Failed to run picturebook application, %w", err)

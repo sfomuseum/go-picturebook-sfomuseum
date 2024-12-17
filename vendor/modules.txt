@@ -20,9 +20,11 @@ github.com/aaronland/go-image-halftone
 ## explicit; go 1.12
 github.com/aaronland/go-mimetypes
 github.com/aaronland/go-mimetypes/lookup
-# github.com/aaronland/go-picturebook v0.9.3
+# github.com/aaronland/go-picturebook v0.10.0
 ## explicit; go 1.23
 github.com/aaronland/go-picturebook
+github.com/aaronland/go-picturebook/app/picturebook
+github.com/aaronland/go-picturebook/bucket
 github.com/aaronland/go-picturebook/caption
 github.com/aaronland/go-picturebook/filter
 github.com/aaronland/go-picturebook/picture
@@ -33,6 +35,17 @@ github.com/aaronland/go-picturebook/text
 # github.com/aaronland/go-roster v1.0.0
 ## explicit; go 1.16
 github.com/aaronland/go-roster
+# github.com/aaronland/gocloud-blob v0.4.0
+## explicit; go 1.23
+github.com/aaronland/gocloud-blob/bucket
+# github.com/cespare/xxhash/v2 v2.3.0
+## explicit; go 1.11
+github.com/cespare/xxhash/v2
+# github.com/dgraph-io/ristretto/v2 v2.0.1
+## explicit; go 1.21
+github.com/dgraph-io/ristretto/v2
+github.com/dgraph-io/ristretto/v2/z
+github.com/dgraph-io/ristretto/v2/z/simd
 # github.com/dsoprea/go-exif/v3 v3.0.1
 ## explicit; go 1.12
 github.com/dsoprea/go-exif/v3
@@ -54,6 +67,9 @@ github.com/dsoprea/go-photoshop-info-format
 ## explicit; go 1.12
 github.com/dsoprea/go-utility/v2/filesystem
 github.com/dsoprea/go-utility/v2/image
+# github.com/dustin/go-humanize v1.0.1
+## explicit; go 1.16
+github.com/dustin/go-humanize
 # github.com/fogleman/colormap v0.0.0-20180829212827-f273ae61505a
 ## explicit
 github.com/fogleman/colormap
@@ -96,6 +112,9 @@ github.com/googleapis/gax-go/v2/apierror
 github.com/googleapis/gax-go/v2/apierror/internal/proto
 github.com/googleapis/gax-go/v2/callctx
 github.com/googleapis/gax-go/v2/internal
+# github.com/jtacoma/uritemplates v1.0.0
+## explicit
+github.com/jtacoma/uritemplates
 # github.com/mandykoh/go-parallel v0.1.0
 ## explicit; go 1.15
 github.com/mandykoh/go-parallel
@@ -121,6 +140,9 @@ github.com/mandykoh/prism/srgb
 # github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 ## explicit
 github.com/nfnt/resize
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
 # github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 ## explicit
 github.com/rwcarlsen/goexif/exif
@@ -130,13 +152,30 @@ github.com/rwcarlsen/goexif/tiff
 ## explicit; go 1.22.4
 github.com/sfomuseum/go-exif-update
 github.com/sfomuseum/go-exif-update/tags
+# github.com/sfomuseum/go-flags v0.10.0
+## explicit; go 1.16
+github.com/sfomuseum/go-flags/flagset
+github.com/sfomuseum/go-flags/multi
 # github.com/sfomuseum/go-font-ocra v0.0.3
 ## explicit; go 1.18
 github.com/sfomuseum/go-font-ocra
 github.com/sfomuseum/go-font-ocra/fonts
-# github.com/sfomuseum/go-sfomuseum-api v0.0.0-20241212230257-d3613510d069
+# github.com/sfomuseum/go-sfomuseum-api v0.0.0-20241217000438-9bbd30f5ddc2
 ## explicit; go 1.22.1
-github.com/sfomuseum/go-sfomuseum-api
+github.com/sfomuseum/go-sfomuseum-api/client
+github.com/sfomuseum/go-sfomuseum-api/response
+# github.com/tidwall/gjson v1.18.0
+## explicit; go 1.12
+github.com/tidwall/gjson
+# github.com/tidwall/match v1.1.1
+## explicit; go 1.15
+github.com/tidwall/match
+# github.com/tidwall/pretty v1.2.0
+## explicit; go 1.16
+github.com/tidwall/pretty
+# github.com/whosonfirst/go-ioutil v1.0.2
+## explicit; go 1.16
+github.com/whosonfirst/go-ioutil
 # go.opencensus.io v0.24.0
 ## explicit; go 1.13
 go.opencensus.io
@@ -158,7 +197,9 @@ go.opencensus.io/trace/tracestate
 ## explicit; go 1.21.0
 gocloud.dev/blob
 gocloud.dev/blob/driver
+gocloud.dev/blob/fileblob
 gocloud.dev/gcerrors
+gocloud.dev/internal/escape
 gocloud.dev/internal/gcerr
 gocloud.dev/internal/oc
 gocloud.dev/internal/openurl
@@ -179,7 +220,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.24.0
+# golang.org/x/sys v0.28.0
 ## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
