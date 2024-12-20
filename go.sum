@@ -22,8 +22,8 @@ github.com/aaronland/go-image-halftone v0.1.0 h1:AJeh5i33vyT9DGvqQ4kFvmQH1I5/vYf
 github.com/aaronland/go-image-halftone v0.1.0/go.mod h1:o8ySrQ2mQoZcfIVLX1EUbg6mY4QCsGbpMRVuNrInOv0=
 github.com/aaronland/go-mimetypes v0.0.2 h1:Gsi1ak00V+m+g8lVIROkM2mIdj7aLnvaF1iqfVkhHHc=
 github.com/aaronland/go-mimetypes v0.0.2/go.mod h1:bFXDLXp+3bRrzRhoD7RY2vSKTcsVjgdSckHxbuIdTLA=
-github.com/aaronland/go-picturebook v0.10.0 h1:D/8t/cvn7TI1IzYtbnLKjvcYcZAXukUBkbBrTEo0j5s=
-github.com/aaronland/go-picturebook v0.10.0/go.mod h1:D7Oc1Ic7tla+kM+JyFGxRMhSxzjSCdhNknBxl6EfkMo=
+github.com/aaronland/go-picturebook v0.11.0 h1:LRpFlwotUviVOf92WTof34zOr+Q7FzKnx3OlWBlWB0I=
+github.com/aaronland/go-picturebook v0.11.0/go.mod h1:D7Oc1Ic7tla+kM+JyFGxRMhSxzjSCdhNknBxl6EfkMo=
 github.com/aaronland/go-roster v1.0.0 h1:FRDGrTqsYySKjWnAhbBGXyeGlI/o5/t9FZYCbUmyQtI=
 github.com/aaronland/go-roster v1.0.0/go.mod h1:KIsYZgrJlAsyb9LsXSCvlqvbcCBVjCSqcQiZx42i9ro=
 github.com/aaronland/gocloud-blob v0.4.0 h1:Vc8RrtZc97CPlG+oLzP6LmTfFDu7Zo7luQa1q6kf2Xc=
@@ -197,8 +197,8 @@ github.com/sfomuseum/go-flags v0.10.0 h1:1OC1ACxpWMsl3XQ9OeNVMQj7Zi2CzufP3Rym3mP
 github.com/sfomuseum/go-flags v0.10.0/go.mod h1:VXOnnX1/yxQpX2yiwHaBV6aCmhtszQOL5bL1/nNo3co=
 github.com/sfomuseum/go-font-ocra v0.0.3 h1:spf3fKuJ7JJFc0ucq1GusOfx8PghsGy4Lzm1P4F96JE=
 github.com/sfomuseum/go-font-ocra v0.0.3/go.mod h1:XS9LDEk78Yyls1DYsMfZSbzCW+WSPKEWDCNd4UgJlUY=
-github.com/sfomuseum/go-sfomuseum-api v0.0.1 h1:NvLnsOiabMNqAfkx8xS7yo5SQ/OZHURMLxr5fBC1A4c=
-github.com/sfomuseum/go-sfomuseum-api v0.0.1/go.mod h1:EC0qLHy1od81vgrcwAgImf8XS+hA88C7A7djebry2Bs=
+github.com/sfomuseum/go-sfomuseum-api v0.0.3 h1:PR9MJbngPy76rgJVjR/+fdIxrkrXHcwQ7B1CkOaUtA8=
+github.com/sfomuseum/go-sfomuseum-api v0.0.3/go.mod h1:EC0qLHy1od81vgrcwAgImf8XS+hA88C7A7djebry2Bs=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=

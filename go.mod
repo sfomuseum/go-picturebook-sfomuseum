@@ -3,10 +3,11 @@ module github.com/sfomuseum/go-picturebook-shoebox
 go 1.23.3
 
 require (
-	github.com/aaronland/go-picturebook v0.10.0
+	github.com/aaronland/go-picturebook v0.11.0
 	github.com/dgraph-io/ristretto/v2 v2.0.1
 	github.com/jtacoma/uritemplates v1.0.0
-	github.com/sfomuseum/go-sfomuseum-api v0.0.1
+	github.com/sfomuseum/go-flags v0.10.0
+	github.com/sfomuseum/go-sfomuseum-api v0.0.3
 	github.com/tidwall/gjson v1.18.0
 	github.com/whosonfirst/go-ioutil v1.0.2
 	gocloud.dev v0.40.0
@@ -45,7 +46,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd // indirect
 	github.com/sfomuseum/go-exif-update v0.1.3 // indirect
-	github.com/sfomuseum/go-flags v0.10.0 // indirect
 	github.com/sfomuseum/go-font-ocra v0.0.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect

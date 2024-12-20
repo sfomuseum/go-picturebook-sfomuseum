@@ -3,15 +3,17 @@ package main
 
 import (
 	"context"
-	"log"
 	"fmt"
-	
+	"log"
+	"log/slog"
+	"os"
+
 	_ "github.com/sfomuseum/go-picturebook-shoebox"
 	_ "gocloud.dev/blob/fileblob"
 
 	"github.com/aaronland/go-picturebook/app/picturebook"
 	"github.com/sfomuseum/go-flags/flagset"
-	"github.com/sfomuseum/go-flags/multi"	
+	"github.com/sfomuseum/go-flags/multi"
 )
 
 // String label defining the orientation of picturebook PDF files. Valid orientations are: 'P' and 'L' for portrait and landscape mode respectively.
@@ -53,14 +55,8 @@ var margin_right float64
 // The size of an exterior "bleed" margin for a picturebook.
 var bleed float64
 
-// A valid aaronland/go-picturebook/bucket.Bucket URI for where source input images are read from.
-var source_uri string
-
 // A valid aaronland/go-picturebook/bucket.Bucket URI for where the final picturebook file will be written to.
 var target_uri string
-
-// A valid aaronland/go-picturebook/bucket.Bucket URI for where temporary picturebook-related images will be written to and read from.
-var tmpfile_uri string
 
 // A boolean flag indicating that, when necessary, an image should be rotated 90 degrees to use the most available page space.
 var fill_page bool
@@ -141,14 +137,28 @@ func main() {
 
 	// fs.StringVar(&sort_uri, "sort", "", desc_sorters)
 
-	fs.StringVar(&tmpfile_uri, "tmpfile-uri", "", "...")
+	fs.StringVar(&target_uri, "target-uri", "", "")	
+	// fs.StringVar(&tmpfile_uri, "tmpfile-uri", "", "...")
 
 	fs.IntVar(&max_pages, "max-pages", 0, "An optional value to indicate that a picturebook should not exceed this number of pages")
 
 	flagset.Parse(fs)
 
-	source_uri := fmt.Sprintf("shoebox://?access_token=%s", access_token)
-	caption_uri := fmt.Sprintf("shoebox://?access_token=%s", access_token)
+	source_uri := fmt.Sprintf("shoebox://?token=%s", access_token)
+	tmpfile_uri := ""
+	caption_uri := fmt.Sprintf("shoebox://?token=%s", access_token)
+
+	if target_uri == "" {
+
+		dir, err := os.Getwd()
+
+		if err != nil {
+			log.Fatalf("No target URI specified and failed to derived current working directory, %v", err)
+		}
+
+		slog.Info(fmt.Sprintf("Shoebox picturebook with be saved to %s", dir))
+		target_uri = dir
+	}
 
 	run_opts := &picturebook.RunOptions{
 		SourceBucketURI: source_uri,
@@ -180,6 +190,7 @@ func main() {
 		SortURI: "",
 
 		Sources: []string{"."},
+		Filename: filename,
 		Verbose: verbose,
 	}
 

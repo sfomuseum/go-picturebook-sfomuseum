@@ -98,7 +98,7 @@ func NewOAuth2Client(ctx context.Context, uri string) (Client, error) {
 	return cl, nil
 }
 
-// ExecuteMethod will perform an API request derived from 'args'.
+// ExecuteMethod will perform an API request derived from 'verb' and 'args'.
 func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, verb string, args *url.Values) (io.ReadSeekCloser, error) {
 
 	endpoint, err := url.Parse(cl.api_endpoint)
@@ -111,6 +111,9 @@ func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, verb string, args *ur
 		args.Set("access_token", cl.access_token)
 	}
 
+	// Note that we do `req = req.WithContext(ctx)` below so
+	// there is no need to do it here too.
+
 	var req *http.Request
 
 	switch verb {
@@ -118,7 +121,7 @@ func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, verb string, args *ur
 
 		endpoint.RawQuery = args.Encode()
 
-		r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+		r, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 
 		if err != nil {
 			return nil, err
@@ -130,7 +133,7 @@ func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, verb string, args *ur
 
 		args_r := strings.NewReader(args.Encode())
 
-		r, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), args_r)
+		r, err := http.NewRequest(http.MethodPost, endpoint.String(), args_r)
 
 		if err != nil {
 			return nil, err
@@ -155,7 +158,7 @@ func (cl *OAuth2Client) executeRequest(ctx context.Context, req *http.Request) (
 	rsp, err := cl.http_client.Do(req)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to execute API request, %w", err)
 	}
 
 	if rsp.StatusCode != http.StatusOK {
