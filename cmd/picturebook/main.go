@@ -97,6 +97,7 @@ var ocra_font bool
 // The maximum number of pages a picturebook can have.
 var max_pages int
 
+// Valid SFO Museum API access token to retrieve shoebox items
 var access_token string
 
 func main() {
@@ -105,7 +106,7 @@ func main() {
 
 	fs := flagset.NewFlagSet("picturebook")
 
-	fs.StringVar(&access_token, "access-token", "", "Your SFO Museum API access token.")
+	fs.StringVar(&access_token, "access-token", "", "A valid SFO Museum API access token to retrieve your shoebox items (must have \"read\" permissions).")
 	fs.StringVar(&orientation, "orientation", "P", "The orientation of your picturebook. Valid orientations are: 'P' and 'L' for portrait and landscape mode respectively.")
 	fs.StringVar(&size, "size", "letter", `A common paper size to use for the size of your picturebook. Valid sizes are: "a3", "a4", "a5", "letter", "legal", or "tabloid".`)
 	fs.Float64Var(&width, "width", 0.0, "A custom height to use as the size of your picturebook. Units are defined in inches by default. This flag overrides the -size flag when used in combination with the -height flag.")
