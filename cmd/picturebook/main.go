@@ -138,7 +138,7 @@ func main() {
 
 	// fs.StringVar(&sort_uri, "sort", "", desc_sorters)
 
-	fs.StringVar(&target_uri, "target-uri", "", "")	
+	fs.StringVar(&target_uri, "target-uri", "", "")
 	// fs.StringVar(&tmpfile_uri, "tmpfile-uri", "", "...")
 
 	fs.IntVar(&max_pages, "max-pages", 0, "An optional value to indicate that a picturebook should not exceed this number of pages")
@@ -160,6 +160,8 @@ func main() {
 		slog.Info(fmt.Sprintf("Shoebox picturebook with be saved to %s", dir))
 		target_uri = dir
 	}
+
+	monitor_uri := "progressbar://"
 
 	run_opts := &picturebook.RunOptions{
 		SourceBucketURI: source_uri,
@@ -190,9 +192,10 @@ func main() {
 		TextURI: "",
 		SortURI: "",
 
-		Sources: []string{"."},
-		Filename: filename,
-		Verbose: verbose,
+		Sources:            []string{"."},
+		Filename:           filename,
+		ProgressMonitorURI: monitor_uri,
+		Verbose:            verbose,
 	}
 
 	err := picturebook.RunWithOptions(ctx, run_opts)

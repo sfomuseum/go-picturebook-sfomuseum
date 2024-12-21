@@ -3,7 +3,7 @@ module github.com/sfomuseum/go-picturebook-shoebox
 go 1.23.3
 
 require (
-	github.com/aaronland/go-picturebook v0.11.0
+	github.com/aaronland/go-picturebook v0.12.0
 	github.com/dgraph-io/ristretto/v2 v2.0.1
 	github.com/jtacoma/uritemplates v1.0.0
 	github.com/sfomuseum/go-flags v0.10.0
@@ -42,9 +42,12 @@ require (
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/mandykoh/go-parallel v0.1.0 // indirect
 	github.com/mandykoh/prism v0.35.3 // indirect
+	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd // indirect
+	github.com/schollz/progressbar/v3 v3.17.1 // indirect
 	github.com/sfomuseum/go-exif-update v0.1.3 // indirect
 	github.com/sfomuseum/go-font-ocra v0.0.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
@@ -53,6 +56,7 @@ require (
 	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/term v0.26.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240716161551-93cc26a95ae9 // indirect
 	google.golang.org/api v0.191.0 // indirect

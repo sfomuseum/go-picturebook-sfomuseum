@@ -90,7 +90,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 				// Object (fetch type map rather than hardcoding things...)
 
 				if i.TypeId != 1 {
-					slog.Warn("Item type not supported", "item id", i.ItemId, "type", i.TypeId)
+					slog.Debug("Item type not supported", "item id", i.ItemId, "type", i.TypeId)
 					continue
 				}
 
