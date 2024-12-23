@@ -18,8 +18,10 @@ This package provides a commandline `picturebook` application, described below, 
 
 ## Tools
 
+```
 $> make cli
 go build -mod vendor -ldflags="-s -w" -o bin/picturebook cmd/picturebook/main.go
+```
 
 ### picturebook
 
