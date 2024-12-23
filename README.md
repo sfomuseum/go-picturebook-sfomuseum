@@ -2,6 +2,10 @@
 
 Go application to create a "picturebook" using the SFO Museum API.
 
+## Description
+
+## Creating a "picturebook" of items in your SFO Museum "shoebox"
+
 ## Tools
 
 ### picturebook
@@ -51,6 +55,10 @@ $> ./bin/picturebook -h
   -width float
     	A custom height to use as the size of your picturebook. Units are defined in inches by default. This flag overrides the -size flag when used in combination with the -height flag.
 ```
+
+## Creating a SFO Museum API acccess token
+
+The easiest and fastest way to create a SFO Museum API access token is to use the handy [Create a new access token for yourself](https://api.sfomuseum.org/oauth2/authenticate/like-magic/) webpage.
 
 ## See also
 
