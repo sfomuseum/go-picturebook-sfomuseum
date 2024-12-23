@@ -1,4 +1,4 @@
-package shoebox
+package bucket
 
 import (
 	"context"

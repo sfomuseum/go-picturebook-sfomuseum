@@ -1,4 +1,4 @@
-module github.com/sfomuseum/go-picturebook-shoebox
+module github.com/sfomuseum/go-picturebook-sfomuseum
 
 go 1.23.3
 

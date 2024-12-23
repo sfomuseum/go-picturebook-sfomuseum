@@ -1,4 +1,4 @@
-package shoebox
+package caption
 
 import (
 	"context"
@@ -10,15 +10,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aaronland/go-picturebook/bucket"
-	"github.com/aaronland/go-picturebook/caption"
+	pb_bucket "github.com/aaronland/go-picturebook/bucket"
+	pb_caption "github.com/aaronland/go-picturebook/caption"
 	"github.com/dgraph-io/ristretto/v2"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 	"github.com/sfomuseum/go-sfomuseum-api/response"
 )
 
 type ShoeboxCaption struct {
-	caption.Caption
+	pb_caption.Caption
 	api_client client.Client
 	cache      *ristretto.Cache[string, string]
 }
@@ -26,14 +26,14 @@ type ShoeboxCaption struct {
 func init() {
 
 	ctx := context.Background()
-	err := caption.RegisterCaption(ctx, "shoebox", NewShoeboxCaption)
+	err := pb_caption.RegisterCaption(ctx, "shoebox", NewShoeboxCaption)
 
 	if err != nil {
 		panic(err)
 	}
 }
 
-func NewShoeboxCaption(ctx context.Context, uri string) (caption.Caption, error) {
+func NewShoeboxCaption(ctx context.Context, uri string) (pb_caption.Caption, error) {
 
 	u, err := url.Parse(uri)
 
@@ -70,7 +70,7 @@ func NewShoeboxCaption(ctx context.Context, uri string) (caption.Caption, error)
 	return c, nil
 }
 
-func (c *ShoeboxCaption) Text(ctx context.Context, b bucket.Bucket, key string) (string, error) {
+func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key string) (string, error) {
 
 	// https://api.sfomuseum.org/methods/sfomuseum.collection.images.getCaption
 

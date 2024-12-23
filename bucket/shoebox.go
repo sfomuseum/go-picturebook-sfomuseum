@@ -1,4 +1,4 @@
-package shoebox
+package bucket
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/aaronland/go-picturebook/bucket"
+	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	"github.com/jtacoma/uritemplates"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 	"github.com/sfomuseum/go-sfomuseum-api/response"
@@ -20,21 +20,21 @@ import (
 )
 
 type ShoeboxBucket struct {
-	bucket.Bucket
+	pb_bucket.Bucket
 	api_client client.Client
 }
 
 func init() {
 
 	ctx := context.Background()
-	err := bucket.RegisterBucket(ctx, "shoebox", NewShoeboxBucket)
+	err := pb_bucket.RegisterBucket(ctx, "shoebox", NewShoeboxBucket)
 
 	if err != nil {
 		panic(err)
 	}
 }
 
-func NewShoeboxBucket(ctx context.Context, uri string) (bucket.Bucket, error) {
+func NewShoeboxBucket(ctx context.Context, uri string) (pb_bucket.Bucket, error) {
 
 	u, err := url.Parse(uri)
 
@@ -242,7 +242,7 @@ func (b *ShoeboxBucket) Delete(ctx context.Context, key string) error {
 	return fmt.Errorf("Not implemented")
 }
 
-func (b *ShoeboxBucket) Attributes(ctx context.Context, key string) (*bucket.Attributes, error) {
+func (b *ShoeboxBucket) Attributes(ctx context.Context, key string) (*pb_bucket.Attributes, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 

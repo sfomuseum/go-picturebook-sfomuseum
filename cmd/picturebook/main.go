@@ -8,7 +8,8 @@ import (
 	"log/slog"
 	"os"
 
-	_ "github.com/sfomuseum/go-picturebook-shoebox"
+	_ "github.com/sfomuseum/go-picturebook-sfomuseum/bucket"
+	_ "github.com/sfomuseum/go-picturebook-sfomuseum/caption"
 	_ "gocloud.dev/blob/fileblob"
 
 	"github.com/aaronland/go-picturebook/app/picturebook"
