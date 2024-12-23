@@ -1,6 +1,6 @@
-# go-picturebook-shoebox
+# go-picturebook-sfomuseum
 
-Go application to create a "picturebook" from items in a SFO Museum shoebox.
+Go application to create a "picturebook" using the SFO Museum API.
 
 ## Tools
 
@@ -55,4 +55,6 @@ $> ./bin/picturebook -h
 ## See also
 
 * https://github.com/aaronland/go-picturebook
+* https://github.com/sfomuseum/go-sfomuseum-api
 * https://you.sfomuseum.org
+* https://api.sfomuseum.org
