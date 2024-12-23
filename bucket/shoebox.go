@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
+	"time"
 
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	"github.com/jtacoma/uritemplates"
@@ -210,7 +212,9 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 // NewReader returns a new `io.ReadSeekCloser` instance for an object image identified by 'key' in a SFO Museum "shoebox".
 func (b *ShoeboxBucket) NewReader(ctx context.Context, key string, opts any) (io.ReadSeekCloser, error) {
 
-	// Validate key here...
+	if !b.isValidKey(key) {
+		return nil, fmt.Errorf("Invalid key")
+	}
 
 	rsp, err := http.Get(key)
 
@@ -237,10 +241,69 @@ func (b *ShoeboxBucket) Delete(ctx context.Context, key string) error {
 
 // Attribute returns a new `aaronland/go-picturebook/bucket.Attributes` instance for an object image identified by 'key' in a SFO Museum "shoebox".
 func (b *ShoeboxBucket) Attributes(ctx context.Context, key string) (*pb_bucket.Attributes, error) {
-	return nil, fmt.Errorf("Not implemented")
+
+	if !b.isValidKey(key) {
+		return nil, fmt.Errorf("Invalid key")
+	}
+
+	rsp, err := http.Head(key)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to execute request, %w", err)
+	}
+
+	if rsp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Request failed: %d %s", rsp.StatusCode, rsp.Status)
+	}
+
+	/*
+
+	> curl -I https://static.sfomuseum.org/media/191/366/340/9/1913663409_MSM9QjCaQmXnyemSonODPufdrayFWc4a_k.jpg
+	HTTP/2 200
+	content-type: image/jpeg
+	content-length: 1737976
+	date: Mon, 23 Dec 2024 19:53:51 GMT
+	last-modified: Tue, 16 Apr 2024 07:51:12 GMT
+	etag: "daf3bd2eb40e880602dd0f8333c9a09c"
+	x-amz-server-side-encryption: AES256
+	accept-ranges: bytes
+	server: AmazonS3
+	x-cache: Hit from cloudfront
+	via: 1.1 7dbcbf3457f77b741952e31c6826a8dc.cloudfront.net (CloudFront)
+	x-amz-cf-pop: SFO53-P7
+	x-amz-cf-id: yGF5f7oWVxwXLDPCpWo8JuVdEfkdHKY6kre5sIOtL1QBhL4KteL3dA==
+	age: 24
+
+	*/
+
+	str_len := rsp.Header.Get("Content-Length")
+	str_lastmod := rsp.Header.Get("Last-Modified")
+
+	content_len, err := strconv.ParseInt(str_len, 10, 64)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse content length, %w", err)
+	}
+
+	lastmod, err := time.Parse(time.RFC1123, str_lastmod)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse lastmod time, %w", err)
+	}
+
+	attrs := &pb_bucket.Attributes{
+		ModTime: lastmod,
+		Size:    content_len,
+	}
+
+	return attrs, nil
 }
 
 // Close completes and terminates any underlying code used by 'b'.
 func (b *ShoeboxBucket) Close() error {
 	return nil
+}
+
+func (b *ShoeboxBucket) isValidKey(key string) bool {
+	return strings.HasPrefix(key, "https://static.sfomuseum.org/media")
 }
