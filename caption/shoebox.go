@@ -16,6 +16,7 @@ import (
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 )
 
+// ShoeboxCaption implements the `aaronland/go-picturebook/caption.Caption` interface for use with object images in a SFO Museum "shoebox".
 type ShoeboxCaption struct {
 	pb_caption.Caption
 	api_client client.Client
@@ -32,6 +33,7 @@ func init() {
 	}
 }
 
+// NewShoeboxCaption returns a new `ShoeboxCaption` instance implementing the `aaronland/go-picturebook/caption.Caption` interface for use with object images in a SFO Museum "shoebox".
 func NewShoeboxCaption(ctx context.Context, uri string) (pb_caption.Caption, error) {
 
 	u, err := url.Parse(uri)
@@ -69,6 +71,7 @@ func NewShoeboxCaption(ctx context.Context, uri string) (pb_caption.Caption, err
 	return c, nil
 }
 
+// Text returns the caption text for object image identified by 'key' in 'b'.
 func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key string) (string, error) {
 
 	// https://api.sfomuseum.org/methods/sfomuseum.collection.images.getCaption

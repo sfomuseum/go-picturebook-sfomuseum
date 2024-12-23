@@ -202,7 +202,7 @@ func main() {
 	err := picturebook.RunWithOptions(ctx, run_opts)
 
 	if err != nil {
-		log.Fatalf("Failed to run picturebook application, %w", err)
+		log.Fatalf("Failed to run picturebook application, %v", err)
 	}
 
 }

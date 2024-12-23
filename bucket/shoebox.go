@@ -18,6 +18,7 @@ import (
 	"github.com/whosonfirst/go-ioutil"
 )
 
+// ShoeboxBucket implements the `aaronland/go-picturebook/bucket.Bucket` interface for use with object images in a SFO Museum "shoebox".
 type ShoeboxBucket struct {
 	pb_bucket.Bucket
 	api_client client.Client
@@ -33,6 +34,7 @@ func init() {
 	}
 }
 
+// NewShoeboxBucket returns a new `ShoeboxBucket` instance implementing the `aaronland/go-picturebook/bucket.Bucket` interface for use with object images in a SFO Museum "shoebox".
 func NewShoeboxBucket(ctx context.Context, uri string) (pb_bucket.Bucket, error) {
 
 	u, err := url.Parse(uri)
@@ -59,6 +61,7 @@ func NewShoeboxBucket(ctx context.Context, uri string) (pb_bucket.Bucket, error)
 	return b, nil
 }
 
+// GatherPictures returns a new `iter.Seq2[string, error]` instance containing the URIs for object images in a SFO Museum "shoebox".
 func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter.Seq2[string, error] {
 
 	// https://api.sfomuseum.org/methods/sfomuseum.you.shoebox.listItems
@@ -180,18 +183,6 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 						}
 
 						yield(im_uri, nil)
-
-						/*
-							id_r := r.Get("wof:id")
-
-							if (! id_r.Exists()){
-								slog.Warn("Image record for object is missing wof:id", "object", i.ItemId)
-								continue
-							}
-
-							compound_id := fmt.Sprintf("%d:%d", i.TypeId, id_r.Int())
-							yield(compound_id, nil)
-						*/
 					}
 
 					return nil
@@ -216,9 +207,10 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 	}
 }
 
+// NewReader returns a new `io.ReadSeekCloser` instance for an object image identified by 'key' in a SFO Museum "shoebox".
 func (b *ShoeboxBucket) NewReader(ctx context.Context, key string, opts any) (io.ReadSeekCloser, error) {
 
-	// Valid key here...
+	// Validate key here...
 
 	rsp, err := http.Get(key)
 
@@ -233,18 +225,22 @@ func (b *ShoeboxBucket) NewReader(ctx context.Context, key string, opts any) (io
 	return ioutil.NewReadSeekCloser(rsp.Body)
 }
 
+// NewWriter returns an error because this package only implements non-destructive methods of the `aaronland/go-picturebook/bucket.Bucket` interface.
 func (b *ShoeboxBucket) NewWriter(ctx context.Context, key string, opts any) (io.WriteCloser, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
+// Delete returns an error because this package only implements non-destructive methods of the `aaronland/go-picturebook/bucket.Bucket` interface.
 func (b *ShoeboxBucket) Delete(ctx context.Context, key string) error {
 	return fmt.Errorf("Not implemented")
 }
 
+// Attribute returns a new `aaronland/go-picturebook/bucket.Attributes` instance for an object image identified by 'key' in a SFO Museum "shoebox".
 func (b *ShoeboxBucket) Attributes(ctx context.Context, key string) (*pb_bucket.Attributes, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
+// Close completes and terminates any underlying code used by 'b'.
 func (b *ShoeboxBucket) Close() error {
 	return nil
 }

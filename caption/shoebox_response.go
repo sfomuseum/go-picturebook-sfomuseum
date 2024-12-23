@@ -31,9 +31,13 @@ func (r *ImageCaption) String() string {
 		r.Title,
 		r.Date,
 		r.CreditLine,
-		"Collection of SFO Museum",
-		r.AccessionNumber,
 	}
+
+	if r.CreditLine != "Collection of SFO Museum" {
+		lines = append(lines, "Collection of SFO Museum")
+	}
+
+	lines = append(lines, r.AccessionNumber)
 
 	return strings.Join(lines, "\n")
 }

@@ -4,9 +4,9 @@ Go application to create a "picturebook" using the SFO Museum API.
 
 ## Description
 
-This package enables support for creating "picturebooks" – a PDF file created from a set of images – using the SFO Museum API and the [aaronland/go-picturebook](https://github.com/aaronland/go-picturebook) package..
+This package enables support for creating "picturebooks" – a PDF file created from a set of images – using the SFO Museum API and the [aaronland/go-picturebook](https://github.com/aaronland/go-picturebook) package. It was created to demonstrate the use of the [SFO Museum API](https://api.sfomuseum.org) and the [sfomuseum/go-sfomuseum-api](https://github.com/sfomuseum/go-sfomuseum-api) package.
 
-It was created to demonstrate the use of the [SFO Museum API](https://api.sfomuseum.org) and the [sfomuseum/go-sfomuseum-api](https://github.com/sfomuseum/go-sfomuseum-api) package.
+Currently, it is only capable of producing "picturebooks" derived from a SFO Museum "shoebox" but in the future it will be able to create picturebooks from arbitrary API calls.
 
 ## Creating a "picturebook" of items in your SFO Museum "shoebox"
 
@@ -17,6 +17,9 @@ This package enables a "bucket" and "caption" handler for deriving images and th
 This package provides a commandline `picturebook` application, described below, which enables these handlers below.
 
 ## Tools
+
+$> make cli
+go build -mod vendor -ldflags="-s -w" -o bin/picturebook cmd/picturebook/main.go
 
 ### picturebook
 
