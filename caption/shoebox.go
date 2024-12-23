@@ -14,7 +14,6 @@ import (
 	pb_caption "github.com/aaronland/go-picturebook/caption"
 	"github.com/dgraph-io/ristretto/v2"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
-	"github.com/sfomuseum/go-sfomuseum-api/response"
 )
 
 type ShoeboxCaption struct {
@@ -102,7 +101,7 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 		return "", err
 	}
 
-	var caption_rsp *response.ImageCaptionResponse
+	var caption_rsp *ImageCaptionResponse
 
 	dec := json.NewDecoder(r)
 	err = dec.Decode(&caption_rsp)

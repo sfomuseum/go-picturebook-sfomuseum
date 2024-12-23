@@ -14,7 +14,6 @@ import (
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	"github.com/jtacoma/uritemplates"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
-	"github.com/sfomuseum/go-sfomuseum-api/response"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-ioutil"
 )
@@ -76,7 +75,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 				return err
 			}
 
-			var items_rsp *response.ShoeboxListItemsResponse
+			var items_rsp *ShoeboxListItemsResponse
 
 			dec := json.NewDecoder(r)
 			err = dec.Decode(&items_rsp)
