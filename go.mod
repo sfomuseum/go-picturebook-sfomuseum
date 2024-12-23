@@ -3,7 +3,7 @@ module github.com/sfomuseum/go-picturebook-sfomuseum
 go 1.23.3
 
 require (
-	github.com/aaronland/go-picturebook v0.13.0
+	github.com/aaronland/go-picturebook v0.14.0
 	github.com/dgraph-io/ristretto/v2 v2.0.1
 	github.com/jtacoma/uritemplates v1.0.0
 	github.com/sfomuseum/go-flags v0.10.0

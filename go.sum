@@ -22,8 +22,8 @@ github.com/aaronland/go-image-halftone v0.1.0 h1:AJeh5i33vyT9DGvqQ4kFvmQH1I5/vYf
 github.com/aaronland/go-image-halftone v0.1.0/go.mod h1:o8ySrQ2mQoZcfIVLX1EUbg6mY4QCsGbpMRVuNrInOv0=
 github.com/aaronland/go-mimetypes v0.0.2 h1:Gsi1ak00V+m+g8lVIROkM2mIdj7aLnvaF1iqfVkhHHc=
 github.com/aaronland/go-mimetypes v0.0.2/go.mod h1:bFXDLXp+3bRrzRhoD7RY2vSKTcsVjgdSckHxbuIdTLA=
-github.com/aaronland/go-picturebook v0.13.0 h1:n7KWXDxjyjkjrH5pCNrmY/9JUP6OVFHYnJi8KlObMBg=
-github.com/aaronland/go-picturebook v0.13.0/go.mod h1:c8r39rDHQvrSHIUwKW9fhASxN45nJ7CsL8J696wZSc4=
+github.com/aaronland/go-picturebook v0.14.0 h1:mPE1PK6rd0RedU72uHdCZnNkUav8s/sISymkjxdIXDc=
+github.com/aaronland/go-picturebook v0.14.0/go.mod h1:c8r39rDHQvrSHIUwKW9fhASxN45nJ7CsL8J696wZSc4=
 github.com/aaronland/go-roster v1.0.0 h1:FRDGrTqsYySKjWnAhbBGXyeGlI/o5/t9FZYCbUmyQtI=
 github.com/aaronland/go-roster v1.0.0/go.mod h1:KIsYZgrJlAsyb9LsXSCvlqvbcCBVjCSqcQiZx42i9ro=
 github.com/aaronland/gocloud-blob v0.4.0 h1:Vc8RrtZc97CPlG+oLzP6LmTfFDu7Zo7luQa1q6kf2Xc=
