@@ -117,7 +117,7 @@ func main() {
 	fs.Float64Var(&border, "border", 0.01, "The size of the border around images.")
 
 	fs.Float64Var(&margin_top, "margin-top", 1.0, "The margin around the top of each page.")
-	fs.Float64Var(&margin_bottom, "margin-bottom", 1.0, "The margin around the bottom of each page.")
+	fs.Float64Var(&margin_bottom, "margin-bottom", 1.5, "The margin around the bottom of each page.")
 	fs.Float64Var(&margin_left, "margin-left", 1.0, "The margin around the left-hand side of each page.")
 	fs.Float64Var(&margin_right, "margin-right", 1.0, "The margin around the right-hand side of each page.")
 	fs.Float64Var(&margin, "margin", 0.0, "The margin around all sides of a page. If non-zero this value will be used to populate all the other -margin-(N) flags.")

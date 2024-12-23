@@ -102,12 +102,6 @@ Collection of SFO Museum
 
 As of this writing only [SFO Museum Aviation Collection objects](https://collection.sfomuseum.org) are included in "shoebox picturebooks". Support for other types of shoebox items (Instagram posts, flights to and from SFO) will be added in subsequent releases.
 
-As of this writing there is an outstanding issue in the [aaronland/go-picturebook](https://github.com/aaronland/go-picturebook) package where the maximum height of an image relative to the bottom margin of a page is _not_ calculated factoring in the total height of that image's caption. This can yield results that are a bit "wonky" and inelegant, like this:
-
-![](docs/images/picturebook-shoebox-height.png)
-
-There is an [open issue](https://github.com/aaronland/go-picturebook/issues/49) for this problem.
-
 ## Creating a SFO Museum API acccess token
 
 The easiest and fastest way to create a SFO Museum API access token is to use the handy [Create a new access token for yourself](https://api.sfomuseum.org/oauth2/authenticate/like-magic/) webpage.
