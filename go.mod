@@ -7,7 +7,7 @@ require (
 	github.com/dgraph-io/ristretto/v2 v2.0.1
 	github.com/jtacoma/uritemplates v1.0.0
 	github.com/sfomuseum/go-flags v0.10.0
-	github.com/sfomuseum/go-sfomuseum-api v0.0.3
+	github.com/sfomuseum/go-sfomuseum-api v1.0.0
 	github.com/tidwall/gjson v1.18.0
 	github.com/whosonfirst/go-ioutil v1.0.2
 	gocloud.dev v0.40.0
