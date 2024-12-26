@@ -35,6 +35,7 @@ type InstagramPost struct {
 	TakenAt         string                `json:"taken_at"`
 	WhosOnFirstId   int64                 `json:"wof:id"`
 	WhosOnFirstRepo string                `json:"wof:repo"`
+	SFOMuseumImage string `json:"sfomuseum:image"`	// This should not be considered stable yet and may be replaced/removed
 }
 
 type InstagramPostCaption struct {

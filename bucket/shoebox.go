@@ -220,8 +220,8 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 					ig_post := ig_post_rsp.Post
 
-					// This will not work. Need to derive SFOM URI at the API layer...
-					yield(ig_post.Path, nil)
+					// SFOMuseumImage should not be considered stable yet and may be replaced/removed
+					yield(ig_post.SFOMuseumImage, nil)
 
 				default:
 					slog.Debug("Item type not supported", "item id", i.ItemId, "type", i.TypeId)
