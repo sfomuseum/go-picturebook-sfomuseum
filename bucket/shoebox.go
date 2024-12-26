@@ -249,6 +249,11 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 					// SFOMuseumImage should not be considered stable yet and may be replaced/removed
 
+					// Note the URL fragment. This is necessary (for the time being) since the IG image
+					// URLs don't have any pointers or references to the SFO Museum post ID. We append
+					// that info in the URL fragment here and then dereference it in the caption/shoebox.Text
+					// method.
+
 					fragment := fmt.Sprintf("ig:%d", ig_post.WhosOnFirstId)
 					image_uri := fmt.Sprintf("%s#%s", ig_post.SFOMuseumImage, fragment)
 

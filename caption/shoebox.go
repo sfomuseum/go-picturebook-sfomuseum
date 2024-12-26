@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"time"
 
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	pb_caption "github.com/aaronland/go-picturebook/caption"
@@ -75,8 +76,6 @@ func NewShoeboxCaption(ctx context.Context, uri string) (pb_caption.Caption, err
 // Text returns the caption text for object image identified by 'key' in 'b'.
 func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key string) (string, error) {
 
-	// https://api.sfomuseum.org/methods/sfomuseum.collection.images.getCaption
-
 	logger := slog.Default()
 	logger = logger.With("key", key)
 
@@ -92,15 +91,15 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 	switch len(parts) {
 	case 2:
 
-		slog.Info("YO")
-
 		fragment := strings.Split(parts[1], ":")
 
 		switch fragment[0] {
 		case "ig":
 
+			// All of this is assigned in bucket/shoebox.go
+
 			post_id := fragment[1]
-			slog.Info("IG", "post id", post_id)
+			logger = logger.With("post id", post_id)
 
 			ig_args := &url.Values{}
 			ig_args.Set("method", "sfomuseum.millsfield.instagram.getInfo")
@@ -109,7 +108,7 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 			ig_rsp, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, ig_args)
 
 			if err != nil {
-				slog.Info("WOMP", "error", err)
+				logger.Error("Failed to get info for IG post", "error", err)
 				return "", fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err)
 			}
 
@@ -120,27 +119,31 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 			err = dec.Decode(&ig_post_rsp)
 
 			if err != nil {
-				slog.Info("WOMP 2", "error", err)
+				logger.Error("Failed to unmarshal IG post", "error", err)
 				return "", fmt.Errorf("Failed to unmarshal IG post response, %w", err)
 			}
 
+			ig_post := ig_post_rsp.Post
+			post_t := time.Unix(ig_post.Taken, 0)
+
 			text := []string{
-				ig_post_rsp.Post.Caption.Excerpt,
-				"This was posted to the SFO Museum Instagram account on {DATE}",
+				fmt.Sprintf(`"%s"`, ig_post.Caption.Excerpt),
+				fmt.Sprintf("This was posted to the SFO Museum Instagram account on %s", post_t.Format("January 02, 2006")),
+				fmt.Sprintf("https://millsfield.sfomuseum.org/instagram/%s", post_id),
 			}
 
 			str_text := strings.Join(text, "\n")
-
-			slog.Info("IG", "caption", str_text)
-
 			return str_text, nil
 
 		default:
-			slog.Info("SAD")
+			logger.Error("Unhandled or unsupported fragment type", "fragment", parts[1])
 			return "", fmt.Errorf("Unhandled or unsupported fragment, %s", fragment[0])
 		}
 
 	default:
+
+		// Objects
+		// https://api.sfomuseum.org/methods/sfomuseum.collection.images.getCaption
 
 		// Please use a regexp...
 		parts := strings.Split(base, "_")
