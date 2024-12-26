@@ -71,8 +71,34 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 	return func(yield func(string, error) bool) {
 
-		args := &url.Values{}
-		args.Set("method", "sfomuseum.you.shoebox.listItems")
+		types_args := &url.Values{}
+		types_args.Set("method", "sfomuseum.you.shoebox.typesMap")
+
+		types_r, err := b.api_client.ExecuteMethod(ctx, http.MethodGet, types_args)
+
+		if err != nil {
+			yield("", err)
+			return
+		}
+
+		defer types_r.Close()
+
+		var types_map_rsp *ShoeboxTypesMapResponse
+
+		dec := json.NewDecoder(types_r)
+		err = dec.Decode(&types_map_rsp)
+
+		if err != nil {
+			yield("", err)
+			return
+		}
+
+		types_map := types_map_rsp.Types
+
+		//
+
+		list_args := &url.Values{}
+		list_args.Set("method", "sfomuseum.you.shoebox.listItems")
 
 		list_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
 
@@ -94,7 +120,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 				// fetch type map rather than hardcoding things...
 
 				switch i.TypeId {
-				case 1: // Objects
+				case types_map["object"]:
 
 					str_id := strconv.FormatInt(i.ItemId, 10)
 
@@ -194,7 +220,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 						return fmt.Errorf("Failed to retrieve images for object %d, %w", i.ItemId, im_err)
 					}
 
-				case 2: // Instagram
+				case types_map["instagram"]:
 
 					str_id := strconv.FormatInt(i.ItemId, 10)
 
@@ -233,7 +259,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 			return nil
 		}
 
-		err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, args, list_cb)
+		err = client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, list_args, list_cb)
 
 		if err != nil {
 			yield("", err)

@@ -35,7 +35,7 @@ type InstagramPost struct {
 	TakenAt         string                `json:"taken_at"`
 	WhosOnFirstId   int64                 `json:"wof:id"`
 	WhosOnFirstRepo string                `json:"wof:repo"`
-	SFOMuseumImage string `json:"sfomuseum:image"`	// This should not be considered stable yet and may be replaced/removed
+	SFOMuseumImage  string                `json:"sfomuseum:image"` // This should not be considered stable yet and may be replaced/removed
 }
 
 type InstagramPostCaption struct {
@@ -43,4 +43,8 @@ type InstagramPostCaption struct {
 	Excerpt  string   `json:"excerpt"`
 	HashTags []string `json:"hashtags"`
 	Users    []string `json:"users"`
+}
+
+type ShoeboxTypesMapResponse struct {
+	Types map[string]uint8
 }

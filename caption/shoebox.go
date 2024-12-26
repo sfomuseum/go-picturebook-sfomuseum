@@ -100,8 +100,8 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 	r, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, args)
 
 	if err != nil {
-		logger.Error("Failed to get caption", "error", err)
-		return "", err
+		logger.Warn("Failed to get caption", "error", err)
+		return "", nil
 	}
 
 	var caption_rsp *ImageCaptionResponse
