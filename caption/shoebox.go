@@ -13,6 +13,7 @@ import (
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	pb_caption "github.com/aaronland/go-picturebook/caption"
 	"github.com/dgraph-io/ristretto/v2"
+	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 )
 
@@ -86,36 +87,91 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 	}
 
 	base := filepath.Base(key)
+	parts := strings.Split(base, "#")
 
-	// Please use a regexp...
-	parts := strings.Split(base, "_")
-	image_id := parts[0]
+	switch len(parts) {
+	case 2:
 
-	logger = logger.With("image", image_id)
+		slog.Info("YO")
 
-	args := &url.Values{}
-	args.Set("method", "sfomuseum.collection.images.getCaption")
-	args.Set("image_id", image_id)
+		fragment := strings.Split(parts[1], ":")
 
-	r, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, args)
+		switch fragment[0] {
+		case "ig":
 
-	if err != nil {
-		logger.Warn("Failed to get caption", "error", err)
-		return "", nil
+			post_id := fragment[1]
+			slog.Info("IG", "post id", post_id)
+
+			ig_args := &url.Values{}
+			ig_args.Set("method", "sfomuseum.millsfield.instagram.getInfo")
+			ig_args.Set("post_id", post_id)
+
+			ig_rsp, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, ig_args)
+
+			if err != nil {
+				slog.Info("WOMP", "error", err)
+				return "", fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err)
+			}
+
+			defer ig_rsp.Close()
+			var ig_post_rsp *response.InstagramPostResponse
+
+			dec := json.NewDecoder(ig_rsp)
+			err = dec.Decode(&ig_post_rsp)
+
+			if err != nil {
+				slog.Info("WOMP 2", "error", err)
+				return "", fmt.Errorf("Failed to unmarshal IG post response, %w", err)
+			}
+
+			text := []string{
+				ig_post_rsp.Post.Caption.Excerpt,
+				"This was posted to the SFO Museum Instagram account on {DATE}",
+			}
+
+			str_text := strings.Join(text, "\n")
+
+			slog.Info("IG", "caption", str_text)
+
+			return str_text, nil
+
+		default:
+			slog.Info("SAD")
+			return "", fmt.Errorf("Unhandled or unsupported fragment, %s", fragment[0])
+		}
+
+	default:
+
+		// Please use a regexp...
+		parts := strings.Split(base, "_")
+		image_id := parts[0]
+
+		logger = logger.With("image", image_id)
+
+		args := &url.Values{}
+		args.Set("method", "sfomuseum.collection.images.getCaption")
+		args.Set("image_id", image_id)
+
+		r, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, args)
+
+		if err != nil {
+			logger.Error("Failed to get caption", "error", err)
+			return "", err
+		}
+
+		var caption_rsp *response.ImageCaptionResponse
+
+		dec := json.NewDecoder(r)
+		err = dec.Decode(&caption_rsp)
+
+		if err != nil {
+			logger.Error("Failed to decode caption", "error", err)
+			return "", err
+		}
+
+		str_caption = caption_rsp.Caption.String()
+		c.cache.Set(key, str_caption, 1)
+
+		return str_caption, nil
 	}
-
-	var caption_rsp *ImageCaptionResponse
-
-	dec := json.NewDecoder(r)
-	err = dec.Decode(&caption_rsp)
-
-	if err != nil {
-		logger.Error("Failed to decode caption", "error", err)
-		return "", err
-	}
-
-	str_caption = caption_rsp.Caption.String()
-	c.cache.Set(key, str_caption, 1)
-
-	return str_caption, nil
 }

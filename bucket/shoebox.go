@@ -15,6 +15,7 @@ import (
 
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	"github.com/jtacoma/uritemplates"
+	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-ioutil"
@@ -83,7 +84,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 		defer types_r.Close()
 
-		var types_map_rsp *ShoeboxTypesMapResponse
+		var types_map_rsp *response.ShoeboxTypesMapResponse
 
 		dec := json.NewDecoder(types_r)
 		err = dec.Decode(&types_map_rsp)
@@ -106,7 +107,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 				return err
 			}
 
-			var items_rsp *ShoeboxListItemsResponse
+			var items_rsp *response.ShoeboxListItemsResponse
 
 			dec := json.NewDecoder(r)
 			err = dec.Decode(&items_rsp)
@@ -235,7 +236,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					}
 
 					defer ig_rsp.Close()
-					var ig_post_rsp *InstagramPostResponse
+					var ig_post_rsp *response.InstagramPostResponse
 
 					dec := json.NewDecoder(ig_rsp)
 					err = dec.Decode(&ig_post_rsp)
@@ -247,7 +248,11 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					ig_post := ig_post_rsp.Post
 
 					// SFOMuseumImage should not be considered stable yet and may be replaced/removed
-					yield(ig_post.SFOMuseumImage, nil)
+
+					fragment := fmt.Sprintf("ig:%d", ig_post.WhosOnFirstId)
+					image_uri := fmt.Sprintf("%s#%s", ig_post.SFOMuseumImage, fragment)
+
+					yield(image_uri, nil)
 
 				default:
 					slog.Debug("Item type not supported", "item id", i.ItemId, "type", i.TypeId)
