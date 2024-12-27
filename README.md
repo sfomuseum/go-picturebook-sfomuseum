@@ -86,16 +86,29 @@ $> ./bin/picturebook \
 
 Which would create a document that looks "like" this:
 
-![](docs/images/picturebook-shoebox-example.png)
+![](docs/images/picturebook-shoebox-example-object.png)
 
 Each object image will include a caption like this:
 
 ```
-goggles: Pan American World Airways
-1950s
-Gift of William E. Talbott
+postcard: Lufthansa, Ilyushin Il-14, Berlin Airport
+1940s
+Gift of Thomas G. Dragges
 Collection of SFO Museum
-2012.151.007
+https://collection.sfomuseum.org/objects/1762696177/
+2015.166.0976
+```
+
+Instagram posts will look like this:
+
+![](docs/images/picturebook-shoebox-example-instagram.png)
+
+And their captions like this:
+
+```
+"First flown in 1957, the Boeing 707 was the first successful jet airliner to provide regular, sustained commercial passenger service."
+This was posted to the SFO Museum Instagram account on October 04, 2024
+https://millsfield.sfomuseum.org/instagram/1947424849
 ```
 
 #### Notes and caveats
