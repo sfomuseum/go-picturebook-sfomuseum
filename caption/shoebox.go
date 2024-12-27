@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mitchellh/go-wordwrap"
+	"github.com/rainycape/unidecode"
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	pb_caption "github.com/aaronland/go-picturebook/caption"
 	"github.com/dgraph-io/ristretto/v2"
@@ -84,7 +86,7 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 	if found {
 		return str_caption, nil
 	}
-
+	
 	base := filepath.Base(key)
 	parts := strings.Split(base, "#")
 
@@ -96,7 +98,8 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 		switch fragment[0] {
 		case "ig":
 
-			// All of this is assigned in bucket/shoebox.go
+			// Instagram posts
+			// All of the fragment info is assigned in bucket/shoebox.go
 
 			post_id := fragment[1]
 			logger = logger.With("post id", post_id)
@@ -126,8 +129,16 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 			ig_post := ig_post_rsp.Post
 			post_t := time.Unix(ig_post.Taken, 0)
 
+			// This shouldn't be necessary (in an ideal world) but the
+			// aaronland/go-picturebook package uses HTMLBasicNew() for
+			// adding text and it has... issues.
+			ig_body := unidecode.Unidecode(ig_post.Caption.Excerpt)
+
+			// Maybe make this value configurable in the shoebox:// caption URI?
+			ig_body = wordwrap.WrapString(ig_body, 145)
+			
 			text := []string{
-				fmt.Sprintf(`"%s"`, ig_post.Caption.Excerpt),
+				fmt.Sprintf(`"%s"`, ig_body),
 				fmt.Sprintf("This was posted to the SFO Museum Instagram account on %s", post_t.Format("January 02, 2006")),
 				fmt.Sprintf("https://millsfield.sfomuseum.org/instagram/%s", post_id),
 			}
