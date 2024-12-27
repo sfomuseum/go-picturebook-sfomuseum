@@ -1,4 +1,4 @@
-package caption
+package response
 
 import (
 	"strings"
@@ -37,6 +37,7 @@ func (r *ImageCaption) String() string {
 		lines = append(lines, "Collection of SFO Museum")
 	}
 
+	lines = append(lines, r.URL)
 	lines = append(lines, r.AccessionNumber)
 
 	return strings.Join(lines, "\n")

@@ -1,4 +1,4 @@
-package bucket
+package response
 
 // ShoeboxListItemsResponse defines the reponse object returned by the `sfomuseum.you.shoebox.listItems` API method.
 type ShoeboxListItemsResponse struct {
@@ -20,4 +20,8 @@ type ShoeboxListItem struct {
 	LastModified int64 `json:"lastmodified"`
 	// TypeId is the numeric identifier of the type of item added to the shoebox.
 	TypeId uint8 `json:"type_id"`
+}
+
+type ShoeboxTypesMapResponse struct {
+	Types map[string]uint8
 }

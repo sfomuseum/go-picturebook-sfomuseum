@@ -3,9 +3,11 @@ module github.com/sfomuseum/go-picturebook-sfomuseum
 go 1.23.3
 
 require (
-	github.com/aaronland/go-picturebook v0.14.0
+	github.com/aaronland/go-picturebook v0.14.1
 	github.com/dgraph-io/ristretto/v2 v2.0.1
 	github.com/jtacoma/uritemplates v1.0.0
+	github.com/mitchellh/go-wordwrap v1.0.1
+	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be
 	github.com/sfomuseum/go-flags v0.10.0
 	github.com/sfomuseum/go-sfomuseum-api v1.0.0
 	github.com/tidwall/gjson v1.18.0

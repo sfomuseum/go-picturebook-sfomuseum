@@ -15,6 +15,7 @@ import (
 
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	"github.com/jtacoma/uritemplates"
+	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-ioutil"
@@ -71,16 +72,42 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 	return func(yield func(string, error) bool) {
 
-		args := &url.Values{}
-		args.Set("method", "sfomuseum.you.shoebox.listItems")
+		types_args := &url.Values{}
+		types_args.Set("method", "sfomuseum.you.shoebox.typesMap")
 
-		cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
+		types_r, err := b.api_client.ExecuteMethod(ctx, http.MethodGet, types_args)
+
+		if err != nil {
+			yield("", err)
+			return
+		}
+
+		defer types_r.Close()
+
+		var types_map_rsp *response.ShoeboxTypesMapResponse
+
+		dec := json.NewDecoder(types_r)
+		err = dec.Decode(&types_map_rsp)
+
+		if err != nil {
+			yield("", err)
+			return
+		}
+
+		types_map := types_map_rsp.Types
+
+		//
+
+		list_args := &url.Values{}
+		list_args.Set("method", "sfomuseum.you.shoebox.listItems")
+
+		list_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
 
 			if err != nil {
 				return err
 			}
 
-			var items_rsp *ShoeboxListItemsResponse
+			var items_rsp *response.ShoeboxListItemsResponse
 
 			dec := json.NewDecoder(r)
 			err = dec.Decode(&items_rsp)
@@ -91,116 +118,158 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 			for _, i := range items_rsp.Items {
 
-				// Object (fetch type map rather than hardcoding things...)
+				// fetch type map rather than hardcoding things...
 
-				if i.TypeId != 1 {
+				switch i.TypeId {
+				case types_map["object"]:
+
+					str_id := strconv.FormatInt(i.ItemId, 10)
+
+					im_args := &url.Values{}
+					im_args.Set("method", "sfomuseum.collection.objects.getImages")
+					im_args.Set("object_id", str_id)
+
+					im_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
+
+						if err != nil {
+							return err
+						}
+
+						// Something something SPR...
+
+						im_body, err := io.ReadAll(r)
+
+						if err != nil {
+							return err
+						}
+
+						im_rsp := gjson.GetBytes(im_body, "images")
+
+						for im_idx, r := range im_rsp.Array() {
+
+							logger := slog.Default()
+							logger = logger.With("object", i.ItemId)
+							logger = logger.With("image", im_idx)
+
+							template_r := r.Get("media:uri_template")
+
+							if !template_r.Exists() {
+								logger.Warn("Image record for object is missing media:uri_template, skipping")
+								continue
+							}
+
+							sizes_r := r.Get("media:properties.sizes")
+
+							if !sizes_r.Exists() {
+								logger.Warn("Image record for object is missing media:properties.sizes, skipping")
+								continue
+							}
+
+							uri_t, err := uritemplates.Parse(template_r.String())
+
+							if err != nil {
+								logger.Warn("Failed to parse URI template for object image", "error", err)
+								continue
+							}
+
+							vars := make(map[string]interface{})
+
+							labels := []string{
+								"o",
+								"k",
+								"b",
+								"c",
+							}
+
+							for _, label := range labels {
+
+								l_rsp := sizes_r.Get(label)
+
+								if !l_rsp.Exists() {
+									continue
+								}
+
+								vars["label"] = label
+								vars["secret"] = l_rsp.Get("secret").String()
+								vars["extension"] = l_rsp.Get("extension").String()
+								break
+							}
+
+							_, has_label := vars["label"]
+
+							if !has_label {
+								logger.Warn("Image missing label after reading sizes, skipping")
+								continue
+							}
+
+							im_uri, err := uri_t.Expand(vars)
+
+							if err != nil {
+								logger.Warn("Failed to expand URI template vars, skipping", "error", err)
+								continue
+							}
+
+							yield(im_uri, nil)
+						}
+
+						return nil
+					}
+
+					im_err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args, im_cb)
+
+					if im_err != nil {
+						return fmt.Errorf("Failed to retrieve images for object %d, %w", i.ItemId, im_err)
+					}
+
+				case types_map["instagram"]:
+
+					str_id := strconv.FormatInt(i.ItemId, 10)
+
+					ig_args := &url.Values{}
+					ig_args.Set("method", "sfomuseum.millsfield.instagram.getInfo")
+					ig_args.Set("post_id", str_id)
+
+					ig_rsp, err := b.api_client.ExecuteMethod(ctx, http.MethodGet, ig_args)
+
+					if err != nil {
+						return fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err)
+					}
+
+					defer ig_rsp.Close()
+					var ig_post_rsp *response.InstagramPostResponse
+
+					dec := json.NewDecoder(ig_rsp)
+					err = dec.Decode(&ig_post_rsp)
+
+					if err != nil {
+						return fmt.Errorf("Failed to unmarshal IG post response, %w", err)
+					}
+
+					ig_post := ig_post_rsp.Post
+
+					// SFOMuseumImage should not be considered stable yet and may be replaced/removed
+
+					// Note the URL fragment. This is necessary (for the time being) since the IG image
+					// URLs don't have any pointers or references to the SFO Museum post ID. We append
+					// that info in the URL fragment here and then dereference it in the caption/shoebox.Text
+					// method.
+
+					fragment := fmt.Sprintf("ig:%d", ig_post.WhosOnFirstId)
+					image_uri := fmt.Sprintf("%s#%s", ig_post.SFOMuseumImage, fragment)
+
+					yield(image_uri, nil)
+
+				default:
 					slog.Debug("Item type not supported", "item id", i.ItemId, "type", i.TypeId)
 					continue
 				}
 
-				str_id := strconv.FormatInt(i.ItemId, 10)
-
-				im_args := &url.Values{}
-				im_args.Set("method", "sfomuseum.collection.objects.getImages")
-				im_args.Set("object_id", str_id)
-
-				im_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
-
-					if err != nil {
-						return err
-					}
-
-					// Something something SPR...
-
-					im_body, err := io.ReadAll(r)
-
-					if err != nil {
-						return err
-					}
-
-					im_rsp := gjson.GetBytes(im_body, "images")
-
-					for im_idx, r := range im_rsp.Array() {
-
-						logger := slog.Default()
-						logger = logger.With("object", i.ItemId)
-						logger = logger.With("image", im_idx)
-
-						template_r := r.Get("media:uri_template")
-
-						if !template_r.Exists() {
-							logger.Warn("Image record for object is missing media:uri_template, skipping")
-							continue
-						}
-
-						sizes_r := r.Get("media:properties.sizes")
-
-						if !sizes_r.Exists() {
-							logger.Warn("Image record for object is missing media:properties.sizes, skipping")
-							continue
-						}
-
-						uri_t, err := uritemplates.Parse(template_r.String())
-
-						if err != nil {
-							logger.Warn("Failed to parse URI template for object image", "error", err)
-							continue
-						}
-
-						vars := make(map[string]interface{})
-
-						labels := []string{
-							"o",
-							"k",
-							"b",
-							"c",
-						}
-
-						for _, label := range labels {
-
-							l_rsp := sizes_r.Get(label)
-
-							if !l_rsp.Exists() {
-								continue
-							}
-
-							vars["label"] = label
-							vars["secret"] = l_rsp.Get("secret").String()
-							vars["extension"] = l_rsp.Get("extension").String()
-							break
-						}
-
-						_, has_label := vars["label"]
-
-						if !has_label {
-							logger.Warn("Image missing label after reading sizes, skipping")
-							continue
-						}
-
-						im_uri, err := uri_t.Expand(vars)
-
-						if err != nil {
-							logger.Warn("Failed to expand URI template vars, skipping", "error", err)
-							continue
-						}
-
-						yield(im_uri, nil)
-					}
-
-					return nil
-				}
-
-				im_err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args, im_cb)
-
-				if im_err != nil {
-					return fmt.Errorf("Failed to retrieve images for object %d, %w", i.ItemId, im_err)
-				}
 			}
 
 			return nil
 		}
 
-		err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, args, cb)
+		err = client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, list_args, list_cb)
 
 		if err != nil {
 			yield("", err)
@@ -258,21 +327,21 @@ func (b *ShoeboxBucket) Attributes(ctx context.Context, key string) (*pb_bucket.
 
 	/*
 
-	> curl -I https://static.sfomuseum.org/media/191/366/340/9/1913663409_MSM9QjCaQmXnyemSonODPufdrayFWc4a_k.jpg
-	HTTP/2 200
-	content-type: image/jpeg
-	content-length: 1737976
-	date: Mon, 23 Dec 2024 19:53:51 GMT
-	last-modified: Tue, 16 Apr 2024 07:51:12 GMT
-	etag: "daf3bd2eb40e880602dd0f8333c9a09c"
-	x-amz-server-side-encryption: AES256
-	accept-ranges: bytes
-	server: AmazonS3
-	x-cache: Hit from cloudfront
-	via: 1.1 7dbcbf3457f77b741952e31c6826a8dc.cloudfront.net (CloudFront)
-	x-amz-cf-pop: SFO53-P7
-	x-amz-cf-id: yGF5f7oWVxwXLDPCpWo8JuVdEfkdHKY6kre5sIOtL1QBhL4KteL3dA==
-	age: 24
+		> curl -I https://static.sfomuseum.org/media/191/366/340/9/1913663409_MSM9QjCaQmXnyemSonODPufdrayFWc4a_k.jpg
+		HTTP/2 200
+		content-type: image/jpeg
+		content-length: 1737976
+		date: Mon, 23 Dec 2024 19:53:51 GMT
+		last-modified: Tue, 16 Apr 2024 07:51:12 GMT
+		etag: "daf3bd2eb40e880602dd0f8333c9a09c"
+		x-amz-server-side-encryption: AES256
+		accept-ranges: bytes
+		server: AmazonS3
+		x-cache: Hit from cloudfront
+		via: 1.1 7dbcbf3457f77b741952e31c6826a8dc.cloudfront.net (CloudFront)
+		x-amz-cf-pop: SFO53-P7
+		x-amz-cf-id: yGF5f7oWVxwXLDPCpWo8JuVdEfkdHKY6kre5sIOtL1QBhL4KteL3dA==
+		age: 24
 
 	*/
 

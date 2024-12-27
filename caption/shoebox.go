@@ -9,10 +9,14 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/mitchellh/go-wordwrap"
+	"github.com/rainycape/unidecode"
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	pb_caption "github.com/aaronland/go-picturebook/caption"
 	"github.com/dgraph-io/ristretto/v2"
+	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 )
 
@@ -74,8 +78,6 @@ func NewShoeboxCaption(ctx context.Context, uri string) (pb_caption.Caption, err
 // Text returns the caption text for object image identified by 'key' in 'b'.
 func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key string) (string, error) {
 
-	// https://api.sfomuseum.org/methods/sfomuseum.collection.images.getCaption
-
 	logger := slog.Default()
 	logger = logger.With("key", key)
 
@@ -84,38 +86,106 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 	if found {
 		return str_caption, nil
 	}
-
+	
 	base := filepath.Base(key)
+	parts := strings.Split(base, "#")
 
-	// Please use a regexp...
-	parts := strings.Split(base, "_")
-	image_id := parts[0]
+	switch len(parts) {
+	case 2:
 
-	logger = logger.With("image", image_id)
+		fragment := strings.Split(parts[1], ":")
 
-	args := &url.Values{}
-	args.Set("method", "sfomuseum.collection.images.getCaption")
-	args.Set("image_id", image_id)
+		switch fragment[0] {
+		case "ig":
 
-	r, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, args)
+			// Instagram posts
+			// All of the fragment info is assigned in bucket/shoebox.go
 
-	if err != nil {
-		logger.Error("Failed to get caption", "error", err)
-		return "", err
+			post_id := fragment[1]
+			logger = logger.With("post id", post_id)
+
+			ig_args := &url.Values{}
+			ig_args.Set("method", "sfomuseum.millsfield.instagram.getInfo")
+			ig_args.Set("post_id", post_id)
+
+			ig_rsp, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, ig_args)
+
+			if err != nil {
+				logger.Error("Failed to get info for IG post", "error", err)
+				return "", fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err)
+			}
+
+			defer ig_rsp.Close()
+			var ig_post_rsp *response.InstagramPostResponse
+
+			dec := json.NewDecoder(ig_rsp)
+			err = dec.Decode(&ig_post_rsp)
+
+			if err != nil {
+				logger.Error("Failed to unmarshal IG post", "error", err)
+				return "", fmt.Errorf("Failed to unmarshal IG post response, %w", err)
+			}
+
+			ig_post := ig_post_rsp.Post
+			post_t := time.Unix(ig_post.Taken, 0)
+
+			// This shouldn't be necessary (in an ideal world) but the
+			// aaronland/go-picturebook package uses HTMLBasicNew() for
+			// adding text and it has... issues.
+			ig_body := unidecode.Unidecode(ig_post.Caption.Excerpt)
+
+			// Maybe make this value configurable in the shoebox:// caption URI?
+			ig_body = wordwrap.WrapString(ig_body, 145)
+			
+			text := []string{
+				fmt.Sprintf(`"%s"`, ig_body),
+				fmt.Sprintf("This was posted to the SFO Museum Instagram account on %s", post_t.Format("January 02, 2006")),
+				fmt.Sprintf("https://millsfield.sfomuseum.org/instagram/%s", post_id),
+			}
+
+			str_text := strings.Join(text, "\n")
+			return str_text, nil
+
+		default:
+			logger.Error("Unhandled or unsupported fragment type", "fragment", parts[1])
+			return "", fmt.Errorf("Unhandled or unsupported fragment, %s", fragment[0])
+		}
+
+	default:
+
+		// Objects
+		// https://api.sfomuseum.org/methods/sfomuseum.collection.images.getCaption
+
+		// Please use a regexp...
+		parts := strings.Split(base, "_")
+		image_id := parts[0]
+
+		logger = logger.With("image", image_id)
+
+		args := &url.Values{}
+		args.Set("method", "sfomuseum.collection.images.getCaption")
+		args.Set("image_id", image_id)
+
+		r, err := c.api_client.ExecuteMethod(ctx, http.MethodGet, args)
+
+		if err != nil {
+			logger.Error("Failed to get caption", "error", err)
+			return "", err
+		}
+
+		var caption_rsp *response.ImageCaptionResponse
+
+		dec := json.NewDecoder(r)
+		err = dec.Decode(&caption_rsp)
+
+		if err != nil {
+			logger.Error("Failed to decode caption", "error", err)
+			return "", err
+		}
+
+		str_caption = caption_rsp.Caption.String()
+		c.cache.Set(key, str_caption, 1)
+
+		return str_caption, nil
 	}
-
-	var caption_rsp *ImageCaptionResponse
-
-	dec := json.NewDecoder(r)
-	err = dec.Decode(&caption_rsp)
-
-	if err != nil {
-		logger.Error("Failed to decode caption", "error", err)
-		return "", err
-	}
-
-	str_caption = caption_rsp.Caption.String()
-	c.cache.Set(key, str_caption, 1)
-
-	return str_caption, nil
 }

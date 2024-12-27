@@ -100,7 +100,7 @@ Collection of SFO Museum
 
 #### Notes and caveats
 
-As of this writing only [SFO Museum Aviation Collection objects](https://collection.sfomuseum.org) are included in "shoebox picturebooks". Support for other types of shoebox items (Instagram posts, flights to and from SFO) will be added in subsequent releases.
+As of this writing only [SFO Museum Aviation Collection objects](https://collection.sfomuseum.org) and [Instagram posts](https://millsfield.sfomuseum.org/instagram) are included in "shoebox picturebooks". Support for other types of shoebox items (flights to and from SFO) will be added in subsequent releases.
 
 ## Creating a SFO Museum API acccess token
 
