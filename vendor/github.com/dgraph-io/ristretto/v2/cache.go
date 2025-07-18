@@ -1,17 +1,6 @@
 /*
- * Copyright 2019 Dgraph Labs, Inc. and Contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 // Ristretto is a fast, fixed size, in-memory cache with a dual focus on
@@ -148,12 +137,22 @@ type Config[K Key, V any] struct {
 	// as well as on rejection of the value.
 	OnExit func(val V)
 
+	// ShouldUpdate is called when a value already exists in cache and is being updated.
+	// If ShouldUpdate returns true, the cache continues with the update (Set). If the
+	// function returns false, no changes are made in the cache. If the value doesn't
+	// already exist, the cache continue with setting that value for the given key.
+	//
+	// In this function, you can check whether the new value is valid. For example, if
+	// your value has timestamp assosicated with it, you could check whether the new
+	// value has the latest timestamp, preventing you from setting an older value.
+	ShouldUpdate func(cur, prev V) bool
+
 	// KeyToHash function is used to customize the key hashing algorithm.
 	// Each key will be hashed using the provided function. If keyToHash value
 	// is not set, the default keyToHash function is used.
 	//
 	// Ristretto has a variety of defaults depending on the underlying interface type
-	// https://github.com/dgraph-io/ristretto/blob/master/z/z.go#L19-L41).
+	// https://github.com/hypermodeinc/ristretto/blob/main/z/z.go#L19-L41).
 	//
 	// Note that if you want 128bit hashes you should use the both the values
 	// in the return of the function. If you want to use 64bit hashes, you can
@@ -199,7 +198,7 @@ type Item[V any] struct {
 	Value      V
 	Cost       int64
 	Expiration time.Time
-	wg         *sync.WaitGroup
+	wait       chan struct{}
 }
 
 // NewCache returns a new Cache instance and any configuration errors, if any.
@@ -233,6 +232,7 @@ func NewCache[K Key, V any](config *Config[K, V]) (*Cache[K, V], error) {
 		ignoreInternalCost: config.IgnoreInternalCost,
 		cleanupTicker:      time.NewTicker(time.Duration(config.TtlTickerDurationInSec) * time.Second / 2),
 	}
+	cache.storedItems.SetShouldUpdateFn(config.ShouldUpdate)
 	cache.onExit = func(val V) {
 		if config.OnExit != nil {
 			config.OnExit(val)
@@ -270,10 +270,9 @@ func (c *Cache[K, V]) Wait() {
 	if c == nil || c.isClosed.Load() {
 		return
 	}
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	c.setBuf <- &Item[V]{wg: wg}
-	wg.Wait()
+	wait := make(chan struct{})
+	c.setBuf <- &Item[V]{wait: wait}
+	<-wait
 }
 
 // Get returns the value (if any) and a boolean representing whether the
@@ -449,8 +448,8 @@ loop:
 	for {
 		select {
 		case i := <-c.setBuf:
-			if i.wg != nil {
-				i.wg.Done()
+			if i.wait != nil {
+				close(i.wait)
 				continue
 			}
 			if i.flag != itemUpdate {
@@ -522,8 +521,8 @@ func (c *Cache[K, V]) processItems() {
 	for {
 		select {
 		case i := <-c.setBuf:
-			if i.wg != nil {
-				i.wg.Done()
+			if i.wait != nil {
+				close(i.wait)
 				continue
 			}
 			// Calculate item cost value if new or update.

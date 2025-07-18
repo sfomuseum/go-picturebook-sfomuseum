@@ -25,6 +25,8 @@ import (
 type ShoeboxBucket struct {
 	pb_bucket.Bucket
 	api_client client.Client
+	min_date int64
+	max_date int64
 }
 
 func init() {
@@ -61,6 +63,42 @@ func NewShoeboxBucket(ctx context.Context, uri string) (pb_bucket.Bucket, error)
 		api_client: api_client,
 	}
 
+	if q.Has("year"){
+
+		t1, err := time.Parse("2006", q.Get("year"))
+
+		if err != nil {
+			return nil, fmt.Errorf("Invalid ?year= parameter, %w", err)
+		}
+
+		t2 := t1.AddDate(0, 12, 31)
+
+		b.min_date = t1.Unix()
+		b.max_date = t2.Unix()
+	}
+	
+	if q.Has("min") {
+
+		v, err := strconv.ParseInt(q.Get("min"), 10, 64)
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse ?min= parameter, %w", err)
+		}
+
+		b.min_date = v
+	}
+
+	if q.Has("max") {
+
+		v, err := strconv.ParseInt(q.Get("max"), 10, 64)
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse ?max= parameter, %w", err)
+		}
+
+		b.max_date = v
+	}
+	
 	return b, nil
 }
 
@@ -101,6 +139,14 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 		list_args := &url.Values{}
 		list_args.Set("method", "sfomuseum.you.shoebox.listItems")
 
+		if b.min_date > 0 {
+			list_args.Set("min_date", strconv.FormatInt(b.min_date, 10))
+		}
+
+		if b.max_date > 0 {
+			list_args.Set("max_date", strconv.FormatInt(b.max_date, 10))
+		}
+		
 		list_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
 
 			if err != nil {

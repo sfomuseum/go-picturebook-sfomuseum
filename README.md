@@ -28,7 +28,7 @@ go build -mod vendor -ldflags="-s -w" -o bin/picturebook cmd/picturebook/main.go
 A commandline tool for creating a "picturebook"-style PDF file from a SFO Museum "shoebox".
 
 ```
-$> ./bin/picturebook -h
+> ./bin/picturebook -h
   -access-token string
     	A valid SFO Museum API access token to retrieve your shoebox items (must have "read" permissions).
   -bleed float
@@ -48,7 +48,7 @@ $> ./bin/picturebook -h
   -margin float
     	The margin around all sides of a page. If non-zero this value will be used to populate all the other -margin-(N) flags.
   -margin-bottom float
-    	The margin around the bottom of each page. (default 1)
+    	The margin around the bottom of each page. (default 1.5)
   -margin-left float
     	The margin around the left-hand side of each page. (default 1)
   -margin-right float
@@ -64,13 +64,15 @@ $> ./bin/picturebook -h
   -size string
     	A common paper size to use for the size of your picturebook. Valid sizes are: "a3", "a4", "a5", "letter", "legal", or "tabloid". (default "letter")
   -target-uri string
-    	
+    	A valid aaronland/go-picturebook/bucket.Bucket URI for where the final picturebook file will be written to.
   -units string
     	The unit of measurement to apply to the -height and -width flags. Valid options are inches, millimeters, centimeters (default "inches")
   -verbose
     	Display verbose output as the picturebook is created.
   -width float
     	A custom height to use as the size of your picturebook. Units are defined in inches by default. This flag overrides the -size flag when used in combination with the -height flag.
+  -year int
+    	Limit shoebox items to those collected during a specific year.
 ```
 
 #### Example
@@ -110,6 +112,17 @@ And their captions like this:
 This was posted to the SFO Museum Instagram account on October 04, 2024
 https://millsfield.sfomuseum.org/instagram/1947424849
 ```
+
+To limit shoebox items to only those collected during a specific year pass in the `-year` flag. For example:
+
+```
+$> ./bin/picturebook \
+	-width 6 \
+	-height 9 \
+	-access-token {SFOMUSEUM_API_ACCESS_TOKEN} \
+	-year 2024
+```
+
 
 #### Notes and caveats
 

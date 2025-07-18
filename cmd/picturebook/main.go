@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"net/url"
 	"os"
+	"strconv"
 
 	_ "github.com/sfomuseum/go-picturebook-sfomuseum/bucket"
 	_ "github.com/sfomuseum/go-picturebook-sfomuseum/caption"
@@ -98,8 +100,11 @@ var ocra_font bool
 // The maximum number of pages a picturebook can have.
 var max_pages int
 
-// Valid SFO Museum API access token to retrieve shoebox items
+// Valid SFO Museum API access token to retrieve shoebox items.
 var access_token string
+
+// Limit shoebox items to those collected during a specific year.
+var year int
 
 func main() {
 
@@ -128,6 +133,8 @@ func main() {
 
 	fs.StringVar(&filename, "filename", "shoebox.pdf", "The filename (path) for your picturebook.")
 
+	fs.IntVar(&year, "year", 0, "Limit shoebox items to those collected during a specific year.")
+	
 	fs.BoolVar(&verbose, "verbose", false, "Display verbose output as the picturebook is created.")
 
 	fs.BoolVar(&even_only, "even-only", false, "Only include images on even-numbered pages.")
@@ -139,14 +146,25 @@ func main() {
 
 	// fs.StringVar(&sort_uri, "sort", "", desc_sorters)
 
-	fs.StringVar(&target_uri, "target-uri", "", "")
+	fs.StringVar(&target_uri, "target-uri", "", "A valid aaronland/go-picturebook/bucket.Bucket URI for where the final picturebook file will be written to.")
 	// fs.StringVar(&tmpfile_uri, "tmpfile-uri", "", "...")
 
 	fs.IntVar(&max_pages, "max-pages", 0, "An optional value to indicate that a picturebook should not exceed this number of pages")
 
 	flagset.Parse(fs)
 
-	source_uri := fmt.Sprintf("shoebox://?token=%s", access_token)
+	source_q := url.Values{}
+	source_q.Set("token", access_token)
+
+	if year > 0 {
+		source_q.Set("year", strconv.Itoa(year))
+	}
+	
+	source_u := url.URL{}
+	source_u.Scheme = "shoebox"
+	source_u.RawQuery = source_q.Encode()
+	
+	source_uri := source_u.String()	// fmt.Sprintf("shoebox://?token=%s", access_token)
 	tmpfile_uri := ""
 	caption_uri := fmt.Sprintf("shoebox://?token=%s", access_token)
 
