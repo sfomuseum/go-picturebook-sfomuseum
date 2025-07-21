@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mitchellh/go-wordwrap"
-	"github.com/rainycape/unidecode"
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	pb_caption "github.com/aaronland/go-picturebook/caption"
 	"github.com/dgraph-io/ristretto/v2"
+	"github.com/mitchellh/go-wordwrap"
+	"github.com/rainycape/unidecode"
 	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
 	"github.com/sfomuseum/go-sfomuseum-api/client"
 )
@@ -86,7 +86,7 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 	if found {
 		return str_caption, nil
 	}
-	
+
 	base := filepath.Base(key)
 	parts := strings.Split(base, "#")
 
@@ -136,7 +136,7 @@ func (c *ShoeboxCaption) Text(ctx context.Context, b pb_bucket.Bucket, key strin
 
 			// Maybe make this value configurable in the shoebox:// caption URI?
 			ig_body = wordwrap.WrapString(ig_body, 145)
-			
+
 			text := []string{
 				fmt.Sprintf(`"%s"`, ig_body),
 				fmt.Sprintf("This was posted to the SFO Museum Instagram account on %s", post_t.Format("January 02, 2006")),

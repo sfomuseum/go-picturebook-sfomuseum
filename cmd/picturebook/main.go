@@ -134,7 +134,7 @@ func main() {
 	fs.StringVar(&filename, "filename", "shoebox.pdf", "The filename (path) for your picturebook.")
 
 	fs.IntVar(&year, "year", 0, "Limit shoebox items to those collected during a specific year.")
-	
+
 	fs.BoolVar(&verbose, "verbose", false, "Display verbose output as the picturebook is created.")
 
 	fs.BoolVar(&even_only, "even-only", false, "Only include images on even-numbered pages.")
@@ -159,12 +159,12 @@ func main() {
 	if year > 0 {
 		source_q.Set("year", strconv.Itoa(year))
 	}
-	
+
 	source_u := url.URL{}
 	source_u.Scheme = "shoebox"
 	source_u.RawQuery = source_q.Encode()
-	
-	source_uri := source_u.String()	// fmt.Sprintf("shoebox://?token=%s", access_token)
+
+	source_uri := source_u.String() // fmt.Sprintf("shoebox://?token=%s", access_token)
 	tmpfile_uri := ""
 	caption_uri := fmt.Sprintf("shoebox://?token=%s", access_token)
 
