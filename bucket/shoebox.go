@@ -16,7 +16,7 @@ import (
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	"github.com/jtacoma/uritemplates"
 	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
-	"github.com/sfomuseum/go-sfomuseum-api/client"
+	"github.com/sfomuseum/go-sfomuseum-api/v2/client"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-ioutil"
 )
@@ -159,15 +159,16 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 			list_args.Set("max_date", strconv.FormatInt(b.max_date, 10))
 		}
 
-		list_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
+		for list_r, err := range client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, list_args) {
 
 			if err != nil {
-				return err
+				yield("", err)
+				return
 			}
-
+		
 			var items_rsp *response.ShoeboxListItemsResponse
 
-			dec := json.NewDecoder(r)
+			dec := json.NewDecoder(list_r)
 			err = dec.Decode(&items_rsp)
 
 			if err != nil {
@@ -187,15 +188,15 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					im_args.Set("method", "sfomuseum.collection.objects.getImages")
 					im_args.Set("object_id", str_id)
 
-					im_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
-
+					for im_r, err := range client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args) {
+					
 						if err != nil {
 							return err
 						}
 
 						// Something something SPR...
 
-						im_body, err := io.ReadAll(r)
+						im_body, err := io.ReadAll(im_r)
 
 						if err != nil {
 							return err
@@ -276,11 +277,6 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 						return nil
 					}
 
-					im_err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args, im_cb)
-
-					if im_err != nil {
-						return fmt.Errorf("Failed to retrieve images for object %d, %w", i.ItemId, im_err)
-					}
 
 				case types_map["instagram"]:
 
@@ -330,12 +326,6 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 			return nil
 		}
 
-		err = client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, list_args, list_cb)
-
-		if err != nil {
-			yield("", err)
-			return
-		}
 	}
 }
 

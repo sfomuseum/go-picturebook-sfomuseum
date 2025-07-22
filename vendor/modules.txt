@@ -191,10 +191,10 @@ github.com/sfomuseum/go-flags/multi
 ## explicit; go 1.18
 github.com/sfomuseum/go-font-ocra
 github.com/sfomuseum/go-font-ocra/fonts
-# github.com/sfomuseum/go-sfomuseum-api v1.0.1
+# github.com/sfomuseum/go-sfomuseum-api/v2 v2.0.0
 ## explicit; go 1.24
-github.com/sfomuseum/go-sfomuseum-api/client
-github.com/sfomuseum/go-sfomuseum-api/response
+github.com/sfomuseum/go-sfomuseum-api/v2/client
+github.com/sfomuseum/go-sfomuseum-api/v2/response
 # github.com/strukturag/libheif-go v0.0.0-20250130134905-55b3482bea15
 ## explicit; go 1.21
 github.com/strukturag/libheif-go

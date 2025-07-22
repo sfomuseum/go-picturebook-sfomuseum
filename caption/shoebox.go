@@ -18,7 +18,7 @@ import (
 	"github.com/mitchellh/go-wordwrap"
 	"github.com/rainycape/unidecode"
 	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
-	"github.com/sfomuseum/go-sfomuseum-api/client"
+	"github.com/sfomuseum/go-sfomuseum-api/v2/client"
 )
 
 // ShoeboxCaption implements the `aaronland/go-picturebook/caption.Caption` interface for use with object images in a SFO Museum "shoebox".
