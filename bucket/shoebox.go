@@ -150,7 +150,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 		list_args := &url.Values{}
 		list_args.Set("method", "sfomuseum.you.shoebox.listItems")
 		list_args.Set("sort", "ASC")
-		
+
 		if b.min_date > 0 {
 			list_args.Set("min_date", strconv.FormatInt(b.min_date, 10))
 		}
@@ -267,7 +267,10 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 								continue
 							}
 
-							yield(im_uri, nil)
+							fragment := fmt.Sprintf("o:%d:%d:%d", i.Id, i.ItemId, i.Created)
+							image_uri := fmt.Sprintf("%s#%s", im_uri, fragment)
+
+							yield(image_uri, nil)
 						}
 
 						return nil
@@ -312,7 +315,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					// that info in the URL fragment here and then dereference it in the caption/shoebox.Text
 					// method.
 
-					fragment := fmt.Sprintf("ig:%d", ig_post.WhosOnFirstId)
+					fragment := fmt.Sprintf("ig:%d:%d:%d", ig_post.WhosOnFirstId, i.ItemId, i.Created)
 					image_uri := fmt.Sprintf("%s#%s", ig_post.SFOMuseumImage, fragment)
 
 					yield(image_uri, nil)

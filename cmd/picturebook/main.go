@@ -141,9 +141,7 @@ func main() {
 	fs.BoolVar(&odd_only, "odd-only", false, "Only include images on odd-numbered pages.")
 
 	// fs.Var(&caption_uris, "caption", desc_captions)
-
 	// fs.StringVar(&text_uri, "text", "", desc_texts)
-
 	// fs.StringVar(&sort_uri, "sort", "", desc_sorters)
 
 	fs.StringVar(&target_uri, "target-uri", "", "A valid aaronland/go-picturebook/bucket.Bucket URI for where the final picturebook file will be written to.")
