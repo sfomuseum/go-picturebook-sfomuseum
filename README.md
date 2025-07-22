@@ -28,7 +28,7 @@ go build -mod vendor -ldflags="-s -w" -o bin/picturebook cmd/picturebook/main.go
 A commandline tool for creating a "picturebook"-style PDF file from a SFO Museum "shoebox".
 
 ```
-> ./bin/picturebook -h
+$> ./bin/picturebook -h
   -access-token string
     	A valid SFO Museum API access token to retrieve your shoebox items (must have "read" permissions).
   -bleed float
@@ -81,43 +81,46 @@ To create a shoebox "picturebook" that is 6 inches wide and 9 inches tall you mi
 
 ```
 $> ./bin/picturebook \
-	-width 6 \
-	-height 9 \
+	-width 9 \
+	-height 7 \
 	-access-token {SFOMUSEUM_API_ACCESS_TOKEN}
 ```
 
 Which would create a document that looks "like" this:
 
-![](docs/images/picturebook-shoebox-example-object.png)
+![](docs/images/go-picturebook-shoebox-object.png)
 
 Each object image will include a caption like this:
 
 ```
-postcard: Lufthansa, Ilyushin Il-14, Berlin Airport
-1940s
-Gift of Thomas G. Dragges
-Collection of SFO Museum
-https://collection.sfomuseum.org/objects/1762696177/
-2015.166.0976
+negative: San Francisco International Airport (SFO), aerial, 1958
+Collection of SFO Museum, 2011.032.0458
+Transfer from San Francisco International Airport
+
+https://collection.sfomuseum.org/objects/1511944253/
+Collected on January 02, 2024
 ```
 
 Instagram posts will look like this:
 
-![](docs/images/picturebook-shoebox-example-instagram.png)
+![](docs/images/go-picturebook-shoebox-instagram.png)
+
 
 And their captions like this:
 
 ```
-"First flown in 1957, the Boeing 707 was the first successful jet airliner to provide regular, sustained commercial passenger service."
-This was posted to the SFO Museum Instagram account on October 04, 2024
-https://millsfield.sfomuseum.org/instagram/1947424849
+"Smile for the camera!"
+This was posted to the SFO Museum Instagram account on January 18, 2018
+
+https://millsfield.sfomuseum.org/instagram/1729358719
+Collected on January 03, 2025
 ```
 
 To limit shoebox items to only those collected during a specific year pass in the `-year` flag. For example:
 
 ```
 $> ./bin/picturebook \
-	-width 6 \
+	-width 7 \
 	-height 9 \
 	-access-token {SFOMUSEUM_API_ACCESS_TOKEN} \
 	-year 2024

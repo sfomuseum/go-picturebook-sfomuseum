@@ -165,14 +165,15 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 				yield("", err)
 				return
 			}
-		
+
 			var items_rsp *response.ShoeboxListItemsResponse
 
 			dec := json.NewDecoder(list_r)
 			err = dec.Decode(&items_rsp)
 
 			if err != nil {
-				return err
+				yield("", err)
+				return
 			}
 
 			for _, i := range items_rsp.Items {
@@ -189,9 +190,14 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					im_args.Set("object_id", str_id)
 
 					for im_r, err := range client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args) {
-					
+
 						if err != nil {
-							return err
+
+							if !yield("", err) {
+								return
+							}
+
+							continue
 						}
 
 						// Something something SPR...
@@ -199,7 +205,11 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 						im_body, err := io.ReadAll(im_r)
 
 						if err != nil {
-							return err
+							if !yield("", err) {
+								return
+							}
+
+							continue
 						}
 
 						im_rsp := gjson.GetBytes(im_body, "images")
@@ -273,10 +283,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 							yield(image_uri, nil)
 						}
-
-						return nil
 					}
-
 
 				case types_map["instagram"]:
 
@@ -289,7 +296,8 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					ig_rsp, err := b.api_client.ExecuteMethod(ctx, http.MethodGet, ig_args)
 
 					if err != nil {
-						return fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err)
+						yield("", fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err))
+						return
 					}
 
 					defer ig_rsp.Close()
@@ -299,7 +307,8 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					err = dec.Decode(&ig_post_rsp)
 
 					if err != nil {
-						return fmt.Errorf("Failed to unmarshal IG post response, %w", err)
+						yield("", fmt.Errorf("Failed to unmarshal IG post response, %w", err))
+						return
 					}
 
 					ig_post := ig_post_rsp.Post
@@ -322,8 +331,6 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 				}
 
 			}
-
-			return nil
 		}
 
 	}
