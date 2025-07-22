@@ -16,7 +16,7 @@ import (
 	pb_bucket "github.com/aaronland/go-picturebook/bucket"
 	"github.com/jtacoma/uritemplates"
 	"github.com/sfomuseum/go-picturebook-sfomuseum/response"
-	"github.com/sfomuseum/go-sfomuseum-api/client"
+	"github.com/sfomuseum/go-sfomuseum-api/v2/client"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-ioutil"
 )
@@ -25,8 +25,8 @@ import (
 type ShoeboxBucket struct {
 	pb_bucket.Bucket
 	api_client client.Client
-	min_date int64
-	max_date int64
+	min_date   int64
+	max_date   int64
 }
 
 func init() {
@@ -63,20 +63,31 @@ func NewShoeboxBucket(ctx context.Context, uri string) (pb_bucket.Bucket, error)
 		api_client: api_client,
 	}
 
-	if q.Has("year"){
+	if q.Has("year") {
 
-		t1, err := time.Parse("2006", q.Get("year"))
+		year := q.Get("year")
+
+		str_start := fmt.Sprintf("%s-01-01 00:00:00", year)
+		str_end := fmt.Sprintf("%s-12-31 23:59:59", year)
+
+		layout := time.DateTime
+
+		t1, err := time.Parse(layout, str_start)
 
 		if err != nil {
-			return nil, fmt.Errorf("Invalid ?year= parameter, %w", err)
+			return nil, fmt.Errorf("Failed to parse start date, %w", err)
 		}
 
-		t2 := t1.AddDate(0, 12, 31)
+		t2, err := time.Parse(layout, str_end)
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse end date, %w", err)
+		}
 
 		b.min_date = t1.Unix()
 		b.max_date = t2.Unix()
 	}
-	
+
 	if q.Has("min") {
 
 		v, err := strconv.ParseInt(q.Get("min"), 10, 64)
@@ -98,7 +109,7 @@ func NewShoeboxBucket(ctx context.Context, uri string) (pb_bucket.Bucket, error)
 
 		b.max_date = v
 	}
-	
+
 	return b, nil
 }
 
@@ -138,6 +149,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 
 		list_args := &url.Values{}
 		list_args.Set("method", "sfomuseum.you.shoebox.listItems")
+		list_args.Set("sort", "ASC")
 
 		if b.min_date > 0 {
 			list_args.Set("min_date", strconv.FormatInt(b.min_date, 10))
@@ -146,20 +158,22 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 		if b.max_date > 0 {
 			list_args.Set("max_date", strconv.FormatInt(b.max_date, 10))
 		}
-		
-		list_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
+
+		for list_r, err := range client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, list_args) {
 
 			if err != nil {
-				return err
+				yield("", err)
+				return
 			}
 
 			var items_rsp *response.ShoeboxListItemsResponse
 
-			dec := json.NewDecoder(r)
+			dec := json.NewDecoder(list_r)
 			err = dec.Decode(&items_rsp)
 
 			if err != nil {
-				return err
+				yield("", err)
+				return
 			}
 
 			for _, i := range items_rsp.Items {
@@ -175,18 +189,27 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					im_args.Set("method", "sfomuseum.collection.objects.getImages")
 					im_args.Set("object_id", str_id)
 
-					im_cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
+					for im_r, err := range client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args) {
 
 						if err != nil {
-							return err
+
+							if !yield("", err) {
+								return
+							}
+
+							continue
 						}
 
 						// Something something SPR...
 
-						im_body, err := io.ReadAll(r)
+						im_body, err := io.ReadAll(im_r)
 
 						if err != nil {
-							return err
+							if !yield("", err) {
+								return
+							}
+
+							continue
 						}
 
 						im_rsp := gjson.GetBytes(im_body, "images")
@@ -255,16 +278,11 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 								continue
 							}
 
-							yield(im_uri, nil)
+							fragment := fmt.Sprintf("o:%d:%d:%d", i.Id, i.ItemId, i.Created)
+							image_uri := fmt.Sprintf("%s#%s", im_uri, fragment)
+
+							yield(image_uri, nil)
 						}
-
-						return nil
-					}
-
-					im_err := client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, im_args, im_cb)
-
-					if im_err != nil {
-						return fmt.Errorf("Failed to retrieve images for object %d, %w", i.ItemId, im_err)
 					}
 
 				case types_map["instagram"]:
@@ -278,7 +296,8 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					ig_rsp, err := b.api_client.ExecuteMethod(ctx, http.MethodGet, ig_args)
 
 					if err != nil {
-						return fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err)
+						yield("", fmt.Errorf("Failed to execute sfomuseum.millsfield.instagram.getInfo method, %w", err))
+						return
 					}
 
 					defer ig_rsp.Close()
@@ -288,7 +307,8 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					err = dec.Decode(&ig_post_rsp)
 
 					if err != nil {
-						return fmt.Errorf("Failed to unmarshal IG post response, %w", err)
+						yield("", fmt.Errorf("Failed to unmarshal IG post response, %w", err))
+						return
 					}
 
 					ig_post := ig_post_rsp.Post
@@ -300,7 +320,7 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 					// that info in the URL fragment here and then dereference it in the caption/shoebox.Text
 					// method.
 
-					fragment := fmt.Sprintf("ig:%d", ig_post.WhosOnFirstId)
+					fragment := fmt.Sprintf("ig:%d:%d:%d", ig_post.WhosOnFirstId, i.ItemId, i.Created)
 					image_uri := fmt.Sprintf("%s#%s", ig_post.SFOMuseumImage, fragment)
 
 					yield(image_uri, nil)
@@ -311,16 +331,8 @@ func (b *ShoeboxBucket) GatherPictures(ctx context.Context, uris ...string) iter
 				}
 
 			}
-
-			return nil
 		}
 
-		err = client.ExecuteMethodPaginatedWithClient(ctx, b.api_client, http.MethodGet, list_args, list_cb)
-
-		if err != nil {
-			yield("", err)
-			return
-		}
 	}
 }
 

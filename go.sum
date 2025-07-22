@@ -289,8 +289,8 @@ github.com/sfomuseum/go-flags v0.11.0 h1:HmMm5DgLxgz8iaNsvJ79dyRXjuAyX/fruqkBeHm
 github.com/sfomuseum/go-flags v0.11.0/go.mod h1:cUTByyudaM9d+iHwxsEpyYHemWVOGL/bqTRPIvydiC8=
 github.com/sfomuseum/go-font-ocra v0.0.3 h1:spf3fKuJ7JJFc0ucq1GusOfx8PghsGy4Lzm1P4F96JE=
 github.com/sfomuseum/go-font-ocra v0.0.3/go.mod h1:XS9LDEk78Yyls1DYsMfZSbzCW+WSPKEWDCNd4UgJlUY=
-github.com/sfomuseum/go-sfomuseum-api v1.0.1 h1:jd1P30lydrmir5M4jbcvNO+y7nsl6gsbrP01kBOD7oE=
-github.com/sfomuseum/go-sfomuseum-api v1.0.1/go.mod h1:XxCmIi7NRrhweMTez6Fq7Yfebzm4X0MAFQpOnkpe7OM=
+github.com/sfomuseum/go-sfomuseum-api/v2 v2.0.0 h1:iPFEZY9cWUKeWaMo/j8TbtECST+Qa4DRj/ONSLD+PFw=
+github.com/sfomuseum/go-sfomuseum-api/v2 v2.0.0/go.mod h1:gGykhvWqREmXdFvBFUxNFYYyJk2cZP7RcpgfvB+9Xfs=
 github.com/spiffe/go-spiffe/v2 v2.5.0 h1:N2I01KCUkv1FAjZXJMwh95KK1ZIQLYbPfhaxw8WS0hE=
 github.com/spiffe/go-spiffe/v2 v2.5.0/go.mod h1:P+NxobPc6wXhVtINNtFjNWGBTreew1GBUCwT2wPmb7g=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

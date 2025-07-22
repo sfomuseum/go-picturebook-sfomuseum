@@ -9,7 +9,7 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be
 	github.com/sfomuseum/go-flags v0.11.0
-	github.com/sfomuseum/go-sfomuseum-api v1.0.1
+	github.com/sfomuseum/go-sfomuseum-api/v2 v2.0.0
 	github.com/tidwall/gjson v1.18.0
 	github.com/whosonfirst/go-ioutil v1.0.2
 	gocloud.dev v0.43.0

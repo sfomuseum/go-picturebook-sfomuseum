@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -107,10 +108,6 @@ func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, verb string, args *ur
 		return nil, fmt.Errorf("Failed to parse endpoint URI, %w", err)
 	}
 
-	if cl.access_token != "" {
-		args.Set("access_token", cl.access_token)
-	}
-
 	// Note that we do `req = req.WithContext(ctx)` below so
 	// there is no need to do it here too.
 
@@ -154,6 +151,11 @@ func (cl *OAuth2Client) ExecuteMethod(ctx context.Context, verb string, args *ur
 func (cl *OAuth2Client) executeRequest(ctx context.Context, req *http.Request) (io.ReadSeekCloser, error) {
 
 	req = req.WithContext(ctx)
+
+	if cl.access_token != "" {
+		b64_token := base64.StdEncoding.EncodeToString([]byte(cl.access_token))
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", b64_token))
+	}
 
 	rsp, err := cl.http_client.Do(req)
 

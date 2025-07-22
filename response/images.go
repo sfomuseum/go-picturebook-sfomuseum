@@ -1,6 +1,7 @@
 package response
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -28,17 +29,18 @@ type ImageCaption struct {
 func (r *ImageCaption) String() string {
 
 	lines := []string{
-		r.Title,
-		r.Date,
-		r.CreditLine,
+		fmt.Sprintf("%s, %s", r.Title, r.Date),
 	}
 
 	if r.CreditLine != "Collection of SFO Museum" {
-		lines = append(lines, "Collection of SFO Museum")
+		lines = append(lines, fmt.Sprintf("Collection of SFO Museum, %s", r.AccessionNumber))
+		lines = append(lines, r.CreditLine)
+	} else {
+		lines = append(lines, fmt.Sprintf("%s, %s", r.CreditLine, r.AccessionNumber))
 	}
 
+	lines = append(lines, "")
 	lines = append(lines, r.URL)
-	lines = append(lines, r.AccessionNumber)
 
 	return strings.Join(lines, "\n")
 }
