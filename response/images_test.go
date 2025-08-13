@@ -19,11 +19,11 @@ func TestImageCaptionResponse(t *testing.T) {
 	"stat": "ok"
 }`
 
-	expected := `postcard: American Airlines, Canada
-c. 1950
+	expected := `postcard: American Airlines, Canada, c. 1950
+Collection of SFO Museum, 2015.166.0309
 Gift of Thomas G. Dragges
-Collection of SFO Museum
-2015.166.0309`
+
+https://api.sfomuseum.org/objects/1762694275/`
 
 	var caption_r *ImageCaptionResponse
 
@@ -36,6 +36,8 @@ Collection of SFO Museum
 	str_caption := caption_r.Caption.String()
 
 	if str_caption != expected {
+		// fmt.Println(str_caption)
 		t.Fatalf("Unexpected string caption '%s'", str_caption)
 	}
+
 }
